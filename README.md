@@ -13,4 +13,4 @@ Listen Sie hier noch einmal alle Teammitglieder auf.
 - Kollisionserkennung für die Ringe ()
 - Wechsel zwischen erster und dritter Perspektive mittels Tastendruck ()
 - Automatische Generierung von Ringen in der Map(Endlosrunner) ()
-- Wechsel zwischen Shadern mittels Tastendruck ()
+- Wechsel zwischen Shadern mittels Tastendruck (Fatmagül)
