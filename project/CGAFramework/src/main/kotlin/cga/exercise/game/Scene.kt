@@ -38,8 +38,7 @@ class Scene(private val window: GameWindow) {
         Math.toRadians(180f)
     )
 
-    private val ring = Renderable()
-    private var status = false
+    private val ring = ModelLoader.loadModel("assets/models/ring/ring2.obj", 0f, 0f, 0f)
 
     private val pointLight : PointLight
     private val pointLight2 : PointLight
@@ -75,6 +74,7 @@ class Scene(private val window: GameWindow) {
         glEnable(GL_DEPTH_TEST); GLError.checkThrow()
         glDepthFunc(GL_LEQUAL); GLError.checkThrow()
 
+        /*
         val res = OBJLoader.loadOBJ("assets/models/ring2.obj")
         val objMesh = res.objects[0].meshes[0]
 
@@ -85,19 +85,19 @@ class Scene(private val window: GameWindow) {
 
         val vertexAttributes = arrayOf(attrPos, attrTC, attrNorm)
 
-        val texDiff = Texture2D.invoke("assets/textures/ground_diff.png", true)
+        val texDiff = Texture2D.invoke("assets/textures/ring_emit.png", true)
         texDiff.setTexParams(GL13.GL_REPEAT, GL_REPEAT, GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR_MIPMAP_LINEAR)
-        val texEmit = Texture2D.invoke("assets/textures/ground_emit.png", true)
+        val texEmit = Texture2D.invoke("assets/textures/ring_emit.png", true)
         texEmit.setTexParams(GL13.GL_REPEAT, GL_REPEAT, GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR_MIPMAP_LINEAR)
-        val texSpec = Texture2D.invoke("assets/textures/ground_spec.png", true)
+        val texSpec = Texture2D.invoke("assets/textures/ring_emit.png", true)
         texSpec.setTexParams(GL13.GL_REPEAT, GL_REPEAT, GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR_MIPMAP_LINEAR)
 
-        val ringMaterial = Material(texDiff, texEmit, texSpec, 60f, Vector2f(20f))
+        val ringMaterial = Material(texDiff, texEmit, texSpec, 60f, Vector2f(20f)) */
 
 
-        ring.meshes.add(Mesh(objMesh.vertexData, objMesh.indexData, vertexAttributes, ringMaterial))
-        ring.translateLocal(Vector3f(0f, 0f, -100f))
-        ring.scaleLocal(Vector3f(0.5f))
+        // ring.meshes.add(Mesh(objMesh.vertexData, objMesh.indexData, vertexAttributes, ringMaterial))
+        ring?.translateLocal(Vector3f(0f, 0f, -100f))
+        ring?.scaleLocal(Vector3f(0.25f))
 
         motorrad?.scaleLocal(Vector3f(0.08f))
 
@@ -137,20 +137,11 @@ class Scene(private val window: GameWindow) {
         spotLight.bind(staticShader, "SpotLight", tronCamera.getCalculateViewMatrix())
         spotLight2.bind(staticShader, "SpotLight2", tronCamera.getCalculateViewMatrix())
         motorrad?.render(staticShader)
-        if(!status)
-        {
-            ring.render(staticShader)
-        }
-        if(CollisionDetection.checkCollision(motorrad, ring) < 0)
-        {
-            status = true
-        }
-
-
+        ring?.render(staticShader)
     }
 
     fun update(dt: Float, t: Float) {
-        motorrad?.translateLocal(Vector3f(0f, 0f, -5f))
+        motorrad?.translateLocal(Vector3f(0f, 0f, -1f))
         if(window.getKeyState(GLFW.GLFW_KEY_A))
         {
             motorrad?.rotateLocal(0f, Math.toRadians(dt * 50f), 0f)
