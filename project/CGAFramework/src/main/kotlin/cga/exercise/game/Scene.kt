@@ -30,7 +30,6 @@ class Scene(private val window: GameWindow) {
     private val skyboxShader : ShaderProgram
 
     private var meshes = arrayListOf<Mesh>()
-    private val matrixCube = Renderable()
     private val tronCamera = TronCamera()
     private val motorrad = ModelLoader.loadModel(
         "assets/models/spaceship/Intergalactic_Spaceship-(Wavefront).obj",
@@ -38,6 +37,9 @@ class Scene(private val window: GameWindow) {
         Math.toRadians(0f),
         Math.toRadians(180f)
     )
+
+    private val ring = Renderable()
+    private var status = false
 
     private val pointLight : PointLight
     private val pointLight2 : PointLight
@@ -47,7 +49,6 @@ class Scene(private val window: GameWindow) {
     private val spotLight : SpotLight
     private val spotLight2 : SpotLight
     private val mouseXPos = window.mousePos.xpos
-    private var angle = 0f
 
     private var skybox = Skybox()
     private var skyBoxTextures = ArrayList<String>()
@@ -68,14 +69,35 @@ class Scene(private val window: GameWindow) {
         skybox.loadCubemap(skyBoxTextures)
 
         //initial opengl state
-        //glClearColor(0.0f, 0.0f, 0.0f, 1.0f); GLError.checkThrow()
         glEnable(GL_CULL_FACE); GLError.checkThrow() //Cull-Facing wurde aktiviert
         glFrontFace(GL_CCW); GLError.checkThrow() // Alle Dreiecke, die zur Kamera gerichtet sind, sind entgegen des Uhrzeigersinns definiert.
         glCullFace(GL_BACK); GLError.checkThrow() // Es werden alle Dreiecke verworfen, die nach hinten zeigen
         glEnable(GL_DEPTH_TEST); GLError.checkThrow()
         glDepthFunc(GL_LEQUAL); GLError.checkThrow()
 
-        matrixCube.translateLocal(Vector3f(0f, 2f, 0f))
+        val res = OBJLoader.loadOBJ("assets/models/ring2.obj")
+        val objMesh = res.objects[0].meshes[0]
+
+        var stride = 8 * 4
+        val attrPos = VertexAttribute(3, GL_FLOAT, stride, 0)
+        val attrTC = VertexAttribute(2, GL_FLOAT, stride, 3 * 4)
+        val attrNorm = VertexAttribute(3, GL_FLOAT, stride, 5 * 4)
+
+        val vertexAttributes = arrayOf(attrPos, attrTC, attrNorm)
+
+        val texDiff = Texture2D.invoke("assets/textures/ground_diff.png", true)
+        texDiff.setTexParams(GL13.GL_REPEAT, GL_REPEAT, GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR_MIPMAP_LINEAR)
+        val texEmit = Texture2D.invoke("assets/textures/ground_emit.png", true)
+        texEmit.setTexParams(GL13.GL_REPEAT, GL_REPEAT, GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR_MIPMAP_LINEAR)
+        val texSpec = Texture2D.invoke("assets/textures/ground_spec.png", true)
+        texSpec.setTexParams(GL13.GL_REPEAT, GL_REPEAT, GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR_MIPMAP_LINEAR)
+
+        val ringMaterial = Material(texDiff, texEmit, texSpec, 60f, Vector2f(20f))
+
+
+        ring.meshes.add(Mesh(objMesh.vertexData, objMesh.indexData, vertexAttributes, ringMaterial))
+        ring.translateLocal(Vector3f(0f, 0f, -100f))
+        ring.scaleLocal(Vector3f(0.5f))
 
         motorrad?.scaleLocal(Vector3f(0.08f))
 
@@ -115,11 +137,20 @@ class Scene(private val window: GameWindow) {
         spotLight.bind(staticShader, "SpotLight", tronCamera.getCalculateViewMatrix())
         spotLight2.bind(staticShader, "SpotLight2", tronCamera.getCalculateViewMatrix())
         motorrad?.render(staticShader)
+        if(!status)
+        {
+            ring.render(staticShader)
+        }
+        if(CollisionDetection.checkCollision(motorrad, ring) < 0)
+        {
+            status = true
+        }
+
+
     }
 
     fun update(dt: Float, t: Float) {
-        motorrad?.translateLocal(Vector3f(0f, 0f, -50f))
-        var angle = 0
+        motorrad?.translateLocal(Vector3f(0f, 0f, -5f))
         if(window.getKeyState(GLFW.GLFW_KEY_A))
         {
             motorrad?.rotateLocal(0f, Math.toRadians(dt * 50f), 0f)
