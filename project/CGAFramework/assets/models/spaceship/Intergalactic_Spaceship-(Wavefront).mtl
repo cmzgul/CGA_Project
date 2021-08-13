@@ -12,6 +12,6 @@ d 1.000000
 illum 2
 map_Bump Intergalactic Spaceship_nmap_2_Tris.jpg
 map_Kd Intergalactic Spaceship_color_4.jpg
-map_Ks Intergalactic Spaceship Ao_Blender.jpg
+map_Ks Intergalactic Spaceship_metalness.jpg
 map_Ke Intergalactic Spaceship_emi.jpg
 

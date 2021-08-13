@@ -6,20 +6,15 @@ import cga.exercise.components.light.PointLight
 import cga.exercise.components.light.SpotLight
 import cga.exercise.components.shader.ShaderProgram
 import cga.exercise.components.texture.Skybox
-import cga.exercise.components.texture.Texture2D
 import cga.framework.GLError
 import cga.framework.GameWindow
 import cga.framework.ModelLoader
-import cga.framework.OBJLoader
 import org.joml.Math
 import org.joml.Vector2f
 import org.joml.Vector3f
 import org.lwjgl.glfw.GLFW
 import org.lwjgl.opengl.GL11.*
-import org.lwjgl.opengl.GL13
-import org.lwjgl.opengl.GL14
-import java.util.*
-import kotlin.math.sin
+import kotlin.collections.ArrayList
 
 
 /**
@@ -27,30 +22,34 @@ import kotlin.math.sin
  */
 class Scene(private val window: GameWindow) {
     private val staticShader: ShaderProgram
-    private val skyboxShader : ShaderProgram
+    private val skyboxShader: ShaderProgram
 
     private var meshes = arrayListOf<Mesh>()
-    private val tronCamera = TronCamera()
+    private val tronCamera = TronCamera(90f, 16f / 9f, 0.1f, 500f)
     private val motorrad = ModelLoader.loadModel(
         "assets/models/spaceship/Intergalactic_Spaceship-(Wavefront).obj",
         Math.toRadians(180f),
         Math.toRadians(0f),
-        Math.toRadians(180f)
+        Math.toRadians(0f)
     )
 
-    private val ring = ModelLoader.loadModel("assets/models/ring/ring2.obj", 0f, 0f, 0f)
+    private val rings = ArrayList<Renderable?>()
+    private var ringCounter = -500f
+    private var points = 0;
 
-    private val pointLight : PointLight
-    private val pointLight2 : PointLight
-    private val pointLight3 : PointLight
-    private val pointLight4 : PointLight
-    private val pointLight5 : PointLight
-    private val spotLight : SpotLight
-    private val spotLight2 : SpotLight
+    private val pointLight: PointLight
+    private val pointLight2: PointLight
+    private val pointLight3: PointLight
+    private val pointLight4: PointLight
+    private val pointLight5: PointLight
+    private val spotLight: SpotLight
+    private val spotLight2: SpotLight
     private val mouseXPos = window.mousePos.xpos
 
     private var skybox = Skybox()
     private var skyBoxTextures = ArrayList<String>()
+
+    private var status = false
 
 
     //scene setup
@@ -74,30 +73,9 @@ class Scene(private val window: GameWindow) {
         glEnable(GL_DEPTH_TEST); GLError.checkThrow()
         glDepthFunc(GL_LEQUAL); GLError.checkThrow()
 
-        /*
-        val res = OBJLoader.loadOBJ("assets/models/ring2.obj")
-        val objMesh = res.objects[0].meshes[0]
 
-        var stride = 8 * 4
-        val attrPos = VertexAttribute(3, GL_FLOAT, stride, 0)
-        val attrTC = VertexAttribute(2, GL_FLOAT, stride, 3 * 4)
-        val attrNorm = VertexAttribute(3, GL_FLOAT, stride, 5 * 4)
-
-        val vertexAttributes = arrayOf(attrPos, attrTC, attrNorm)
-
-        val texDiff = Texture2D.invoke("assets/textures/ring_emit.png", true)
-        texDiff.setTexParams(GL13.GL_REPEAT, GL_REPEAT, GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR_MIPMAP_LINEAR)
-        val texEmit = Texture2D.invoke("assets/textures/ring_emit.png", true)
-        texEmit.setTexParams(GL13.GL_REPEAT, GL_REPEAT, GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR_MIPMAP_LINEAR)
-        val texSpec = Texture2D.invoke("assets/textures/ring_emit.png", true)
-        texSpec.setTexParams(GL13.GL_REPEAT, GL_REPEAT, GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR_MIPMAP_LINEAR)
-
-        val ringMaterial = Material(texDiff, texEmit, texSpec, 60f, Vector2f(20f)) */
-
-
-        // ring.meshes.add(Mesh(objMesh.vertexData, objMesh.indexData, vertexAttributes, ringMaterial))
-        ring?.translateLocal(Vector3f(0f, 0f, -100f))
-        ring?.scaleLocal(Vector3f(0.25f))
+        //ring?.translateLocal(Vector3f(0f, 0f, -100f))
+        //ring?.scaleLocal(Vector3f(0.25f))
 
         motorrad?.scaleLocal(Vector3f(0.08f))
 
@@ -110,24 +88,36 @@ class Scene(private val window: GameWindow) {
         pointLight.parent = motorrad
 
 
-        spotLight = SpotLight(Vector3f(0f, 1f, 0f), Vector3f(1.0f, 1.0f, 1.0f), Vector3f(0.5f, 0.05f, 0.01f), 12.5f, 17.5f)
+        spotLight =
+            SpotLight(Vector3f(0f, 1f, 0f), Vector3f(1.0f, 1.0f, 1.0f), Vector3f(0.5f, 0.05f, 0.01f), 12.5f, 17.5f)
         spotLight.rotateLocal(Math.toRadians(-5.0f), 0f, 0f)
         spotLight.parent = motorrad
 
-        spotLight2 = SpotLight(Vector3f(0f, 5f, 0f), Vector3f(1.0f, 0.0f, 1.0f), Vector3f(0.5f, 0.05f, 0.01f), 10.5f, 20.5f)
+        spotLight2 =
+            SpotLight(Vector3f(0f, 5f, 0f), Vector3f(1.0f, 0.0f, 1.0f), Vector3f(0.5f, 0.05f, 0.01f), 10.5f, 20.5f)
         spotLight2.rotateLocal(Math.toRadians(-90.0f), 0f, 0f)
 
         tronCamera.rotateLocal(Math.toRadians(-35.0f), 0f, 0f)
         tronCamera.translateLocal(Vector3f(0f, 0.0f, 10f))
         tronCamera.parent = motorrad
+
+        for (i in 0 until 50) {
+            spawnRings()
+        }
     }
 
 
     fun render(dt: Float, t: Float) {
+
         glClear(GL_COLOR_BUFFER_BIT or GL_DEPTH_BUFFER_BIT)
         staticShader.use()
         tronCamera.bind(staticShader)
-        skybox.render(skyboxShader, tronCamera.getCalculateViewMatrix(), tronCamera.getCalculateProjectionMatrix(), tronCamera.getPosition())
+        skybox.render(
+            skyboxShader,
+            tronCamera.getCalculateViewMatrix(),
+            tronCamera.getCalculateProjectionMatrix(),
+            tronCamera.getPosition()
+        )
         staticShader.use()
         pointLight.bind(staticShader, "PointLight")
         pointLight2.bind(staticShader, "PointLight2")
@@ -137,26 +127,30 @@ class Scene(private val window: GameWindow) {
         spotLight.bind(staticShader, "SpotLight", tronCamera.getCalculateViewMatrix())
         spotLight2.bind(staticShader, "SpotLight2", tronCamera.getCalculateViewMatrix())
         motorrad?.render(staticShader)
-        ring?.render(staticShader)
+        rings.forEach {
+            it?.render(staticShader)
+            it?.gotHit(motorrad)
+            if (it?.hit == 1) {
+                points++
+                println("You scored a point! Current Points : $points")
+            }
+        }
     }
 
     fun update(dt: Float, t: Float) {
-        motorrad?.translateLocal(Vector3f(0f, 0f, -1f))
-        if(window.getKeyState(GLFW.GLFW_KEY_A))
-        {
-            motorrad?.rotateLocal(0f, Math.toRadians(dt * 50f), 0f)
+
+        motorrad?.translateLocal(Vector3f(0f, 0f, -20f))
+        if (window.getKeyState(GLFW.GLFW_KEY_A)) {
+            motorrad?.rotateLocal(0f, Math.toRadians(dt * 100f), Math.toRadians(dt * 10f))
         }
-        if(window.getKeyState(GLFW.GLFW_KEY_D))
-        {
-            motorrad?.rotateLocal(0f, Math.toRadians(dt * -50f), 0f)
+        if (window.getKeyState(GLFW.GLFW_KEY_D)) {
+            motorrad?.rotateLocal(0f, Math.toRadians(dt * -100f), Math.toRadians(dt * -10f))
         }
-        if(window.getKeyState(GLFW.GLFW_KEY_W))
-        {
-            motorrad?.rotateLocal(Math.toRadians(dt * 20f),0f, 0f)
+        if (window.getKeyState(GLFW.GLFW_KEY_W)) {
+            motorrad?.rotateLocal(Math.toRadians(dt * 30f), 0f, 0f)
         }
-        if(window.getKeyState(GLFW.GLFW_KEY_S))
-        {
-            motorrad?.rotateLocal(Math.toRadians(dt * -20f), 0f, 0f)
+        if (window.getKeyState(GLFW.GLFW_KEY_S)) {
+            motorrad?.rotateLocal(Math.toRadians(dt * -30f), 0f, 0f)
         }
     }
 
@@ -169,5 +163,13 @@ class Scene(private val window: GameWindow) {
     }
 
     fun cleanup() {}
+
+    fun spawnRings() {
+        var newRing = ModelLoader.loadModel("assets/models/ring/ring2.obj", 0f, 0f, 0f)
+        rings.add(newRing)
+        rings[rings.size - 1]?.translateLocal(Vector3f((Math.random() * 200f + 1f).toFloat(), 0f, -ringCounter))
+        rings[rings.size - 1]?.scaleLocal(Vector3f(0.5f))
+        ringCounter += 400f
+    }
 }
 
