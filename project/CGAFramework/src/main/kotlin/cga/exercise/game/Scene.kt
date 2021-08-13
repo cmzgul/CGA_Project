@@ -10,7 +10,6 @@ import cga.framework.GLError
 import cga.framework.GameWindow
 import cga.framework.ModelLoader
 import org.joml.Math
-import org.joml.Vector2f
 import org.joml.Vector3f
 import org.lwjgl.glfw.GLFW
 import org.lwjgl.opengl.GL11.*
@@ -25,8 +24,10 @@ class Scene(private val window: GameWindow) {
     private val skyboxShader: ShaderProgram
 
     private var meshes = arrayListOf<Mesh>()
-    private val tronCamera = TronCamera(90f, 16f / 9f, 0.1f, 500f)
-    private val motorrad = ModelLoader.loadModel(
+    private val tronCamera = TronCamera(90f, 16f / 9f, 0.1f, 1000f)
+    private var activeCamera = 0
+    private var staticCamera = tronCamera
+    private val raumschiff = ModelLoader.loadModel(
         "assets/models/spaceship/Intergalactic_Spaceship-(Wavefront).obj",
         Math.toRadians(180f),
         Math.toRadians(0f),
@@ -73,11 +74,7 @@ class Scene(private val window: GameWindow) {
         glEnable(GL_DEPTH_TEST); GLError.checkThrow()
         glDepthFunc(GL_LEQUAL); GLError.checkThrow()
 
-
-        //ring?.translateLocal(Vector3f(0f, 0f, -100f))
-        //ring?.scaleLocal(Vector3f(0.25f))
-
-        motorrad?.scaleLocal(Vector3f(0.08f))
+        raumschiff?.scaleLocal(Vector3f(0.08f))
 
 
         pointLight = PointLight(Vector3f(0.0f, 0.5f, 0.0f), Vector3f(2.0f, 0.0f, 1.0f), Vector3f(1.0f, 0.5f, 0.1f))
@@ -85,21 +82,21 @@ class Scene(private val window: GameWindow) {
         pointLight3 = PointLight(Vector3f(-20.0f, 5f, 20.0f), Vector3f(0.0f, 2.0f, 0.0f), Vector3f(1.0f, 0.5f, 0.1f))
         pointLight4 = PointLight(Vector3f(20.0f, 5f, -20.0f), Vector3f(0.0f, 0.0f, 2.0f), Vector3f(1.0f, 0.5f, 0.1f))
         pointLight5 = PointLight(Vector3f(-20.0f, 5f, -20.0f), Vector3f(2.0f, 0.0f, 2.0f), Vector3f(1.0f, 0.5f, 0.1f))
-        pointLight.parent = motorrad
+        pointLight.parent = raumschiff
 
 
         spotLight =
             SpotLight(Vector3f(0f, 1f, 0f), Vector3f(1.0f, 1.0f, 1.0f), Vector3f(0.5f, 0.05f, 0.01f), 12.5f, 17.5f)
         spotLight.rotateLocal(Math.toRadians(-5.0f), 0f, 0f)
-        spotLight.parent = motorrad
+        spotLight.parent = raumschiff
 
         spotLight2 =
             SpotLight(Vector3f(0f, 5f, 0f), Vector3f(1.0f, 0.0f, 1.0f), Vector3f(0.5f, 0.05f, 0.01f), 10.5f, 20.5f)
         spotLight2.rotateLocal(Math.toRadians(-90.0f), 0f, 0f)
 
-        tronCamera.rotateLocal(Math.toRadians(-35.0f), 0f, 0f)
-        tronCamera.translateLocal(Vector3f(0f, 0.0f, 10f))
-        tronCamera.parent = motorrad
+        staticCamera.rotateLocal(Math.toRadians(-35.0f), 0f, 0f)
+        staticCamera.translateLocal(Vector3f(0f, 0.0f, 10f))
+        staticCamera.parent = raumschiff
 
         for (i in 0 until 50) {
             spawnRings()
@@ -111,12 +108,11 @@ class Scene(private val window: GameWindow) {
 
         glClear(GL_COLOR_BUFFER_BIT or GL_DEPTH_BUFFER_BIT)
         staticShader.use()
-        tronCamera.bind(staticShader)
+        staticCamera.bind(staticShader)
         skybox.render(
             skyboxShader,
-            tronCamera.getCalculateViewMatrix(),
-            tronCamera.getCalculateProjectionMatrix(),
-            tronCamera.getPosition()
+            staticCamera.getCalculateViewMatrix(),
+            staticCamera.getCalculateProjectionMatrix()
         )
         staticShader.use()
         pointLight.bind(staticShader, "PointLight")
@@ -126,10 +122,10 @@ class Scene(private val window: GameWindow) {
         pointLight5.bind(staticShader, "PointLight5")
         spotLight.bind(staticShader, "SpotLight", tronCamera.getCalculateViewMatrix())
         spotLight2.bind(staticShader, "SpotLight2", tronCamera.getCalculateViewMatrix())
-        motorrad?.render(staticShader)
+        raumschiff?.render(staticShader)
         rings.forEach {
             it?.render(staticShader)
-            it?.gotHit(motorrad)
+            it?.gotHit(raumschiff)
             if (it?.hit == 1) {
                 points++
                 println("You scored a point! Current Points : $points")
@@ -139,27 +135,27 @@ class Scene(private val window: GameWindow) {
 
     fun update(dt: Float, t: Float) {
 
-        motorrad?.translateLocal(Vector3f(0f, 0f, -20f))
+        raumschiff?.translateLocal(Vector3f(0f, 0f, -20f))
         if (window.getKeyState(GLFW.GLFW_KEY_A)) {
-            motorrad?.rotateLocal(0f, Math.toRadians(dt * 100f), Math.toRadians(dt * 10f))
+            raumschiff?.rotateLocal(0f, Math.toRadians(dt * 100f), Math.toRadians(dt * 10f))
         }
         if (window.getKeyState(GLFW.GLFW_KEY_D)) {
-            motorrad?.rotateLocal(0f, Math.toRadians(dt * -100f), Math.toRadians(dt * -10f))
+            raumschiff?.rotateLocal(0f, Math.toRadians(dt * -100f), Math.toRadians(dt * -10f))
         }
         if (window.getKeyState(GLFW.GLFW_KEY_W)) {
-            motorrad?.rotateLocal(Math.toRadians(dt * 30f), 0f, 0f)
+            raumschiff?.rotateLocal(Math.toRadians(dt * 30f), 0f, 0f)
         }
         if (window.getKeyState(GLFW.GLFW_KEY_S)) {
-            motorrad?.rotateLocal(Math.toRadians(dt * -30f), 0f, 0f)
+            raumschiff?.rotateLocal(Math.toRadians(dt * -30f), 0f, 0f)
         }
     }
 
 
-    fun onKey(key: Int, scancode: Int, action: Int, mode: Int) {}
+    fun onKey(key: Int, scancode: Int, action: Int, mode: Int) {
 
-    fun onMouseMove(xpos: Double, ypos: Double) {
-        var diffX = (mouseXPos - xpos).toFloat()
-        tronCamera.rotateAroundPoint(0f, Math.toRadians(diffX * 0.002f), 0f, Vector3f(0f))
+    }
+
+    fun onMouseMove(xpos: Double, ypos: Double){
     }
 
     fun cleanup() {}
@@ -167,7 +163,7 @@ class Scene(private val window: GameWindow) {
     fun spawnRings() {
         var newRing = ModelLoader.loadModel("assets/models/ring/ring2.obj", 0f, 0f, 0f)
         rings.add(newRing)
-        rings[rings.size - 1]?.translateLocal(Vector3f((Math.random() * 200f + 1f).toFloat(), 0f, -ringCounter))
+        rings[rings.size - 1]?.translateLocal(Vector3f((Math.random() * 200f + 1f).toFloat(), (Math.random() * 200f + 1f).toFloat(), -ringCounter))
         rings[rings.size - 1]?.scaleLocal(Vector3f(0.5f))
         ringCounter += 400f
     }
