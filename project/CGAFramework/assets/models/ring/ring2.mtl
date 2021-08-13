@@ -1,0 +1,17 @@
+# Blender MTL File: 'None'
+# Material Count: 1
+
+newmtl default
+Ns 0.000000
+Ka 1.000000 1.000000 1.000000
+Kd 1.000000 1.000000 1.000000
+Ks 0.000000 0.000000 0.000000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 1
+map_Ka ring_diff.png
+map_Kd ring_diff.png
+map_Ke ring_emit.png
+map_ks ring_spec.png
+map_Bump ring_norm.png
