@@ -50,8 +50,6 @@ class Scene(private val window: GameWindow) {
     private var skybox = Skybox()
     private var skyBoxTextures = ArrayList<String>()
 
-    private var status = false
-
 
     //scene setup
     init {
@@ -85,8 +83,7 @@ class Scene(private val window: GameWindow) {
         pointLight.parent = raumschiff
 
 
-        spotLight =
-            SpotLight(Vector3f(0f, 1f, 0f), Vector3f(1.0f, 1.0f, 1.0f), Vector3f(0.5f, 0.05f, 0.01f), 12.5f, 17.5f)
+        spotLight = SpotLight(Vector3f(0f, 1f, 0f), Vector3f(1.0f, 1.0f, 1.0f), Vector3f(0.5f, 0.05f, 0.01f), 12.5f, 17.5f)
         spotLight.rotateLocal(Math.toRadians(-5.0f), 0f, 0f)
         spotLight.parent = raumschiff
 
