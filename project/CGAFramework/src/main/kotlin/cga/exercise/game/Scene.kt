@@ -24,8 +24,8 @@ class Scene(private val window: GameWindow) {
     private val skyboxShader: ShaderProgram
 
     private var meshes = arrayListOf<Mesh>()
-    private val thirdPersonCamera = TronCamera(90f, 16f / 9f, 0.1f, 1000f)
-    private var firstPersonCamera = TronCamera(90f, 16f / 9f, 0.1f, 1000f)
+    private val thirdPersonCamera = TronCamera(90f, 16f / 9f, 0.1f, 1200f)
+    private var firstPersonCamera = TronCamera(90f, 16f / 9f, 0.1f, 1200f)
     private var activeCamera = thirdPersonCamera
 
     private val raumschiff = ModelLoader.loadModel(
@@ -82,12 +82,14 @@ class Scene(private val window: GameWindow) {
         glDepthFunc(GL_LEQUAL); GLError.checkThrow()
 
 
+        raumschiff?.translateLocal(Vector3f(0f,0f,20f)) //für einen einfacheren Start
         raumschiff?.scaleLocal(Vector3f(0.08f))
 
 
-        planet0?.scaleLocal(Vector3f(6f))
-        planet0?.translateLocal(Vector3f(0f, 0f ,-100f))
 
+        planet0?.rotateLocal(0f,0f,-0.2f) //Schiefer Planet
+        planet0?.translateGlobal(Vector3f(-700f, -150f ,-1200f))
+        planet0?.scaleLocal(Vector3f(10f))
 
 
         pointLight = PointLight(Vector3f(0.0f, 0.5f, 0.0f), Vector3f(2.0f, 0.0f, 1.0f), Vector3f(1.0f, 0.5f, 0.1f))
@@ -156,7 +158,7 @@ class Scene(private val window: GameWindow) {
     }
 
     fun update(dt: Float, t: Float) {
-
+        planet0?.rotateLocal(0.001f,0.010f,0.0f) //Planet rotation
         raumschiff?.translateLocal(Vector3f(0f, 0f, -20f))
         if (window.getKeyState(GLFW.GLFW_KEY_A)) {
             raumschiff?.rotateLocal(0f, Math.toRadians(dt * 100f), Math.toRadians(dt * 10f))
