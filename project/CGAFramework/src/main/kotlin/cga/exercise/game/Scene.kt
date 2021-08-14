@@ -9,12 +9,10 @@ import cga.exercise.components.texture.Skybox
 import cga.framework.GLError
 import cga.framework.GameWindow
 import cga.framework.ModelLoader
-import cga.framework.OBJLoader
 import org.joml.Math
 import org.joml.Vector3f
 import org.lwjgl.glfw.GLFW
 import org.lwjgl.opengl.GL11.*
-import java.util.*
 import kotlin.collections.ArrayList
 
 
@@ -26,10 +24,9 @@ class Scene(private val window: GameWindow) {
     private val skyboxShader: ShaderProgram
 
     private var meshes = arrayListOf<Mesh>()
-    private val tronCamera = TronCamera(90f, 16f / 9f, 0.1f, 1000f)
-    private var activeCamera = 0
-    private var staticCamera = tronCamera
-    private var staticCamera1 = tronCamera
+    private val thirdPersonCamera = TronCamera(90f, 16f / 9f, 0.1f, 1000f)
+    private var firstPersonCamera = TronCamera(90f, 16f / 9f, 0.1f, 1000f)
+    private var activeCamera = thirdPersonCamera
 
     private val raumschiff = ModelLoader.loadModel(
         "assets/models/spaceship/Intergalactic_Spaceship-(Wavefront).obj",
@@ -49,6 +46,7 @@ class Scene(private val window: GameWindow) {
     private var ringCounter = -500f
     private var points = 0;
 
+    private var lost = false
 
     private val pointLight: PointLight
     private val pointLight2: PointLight
@@ -57,7 +55,6 @@ class Scene(private val window: GameWindow) {
     private val pointLight5: PointLight
     private val spotLight: SpotLight
     private val spotLight2: SpotLight
-    private val mouseXPos = window.mousePos.xpos
 
     private var skybox = Skybox()
     private var skyBoxTextures = ArrayList<String>()
@@ -108,18 +105,14 @@ class Scene(private val window: GameWindow) {
             SpotLight(Vector3f(0f, 5f, 0f), Vector3f(1.0f, 0.0f, 1.0f), Vector3f(0.5f, 0.05f, 0.01f), 10.5f, 20.5f)
         spotLight2.rotateLocal(Math.toRadians(-90.0f), 0f, 0f)
 
-        staticCamera.rotateLocal(Math.toRadians(-35.0f), 0f, 0f)
-        staticCamera.translateLocal(Vector3f(0f, 0.0f, 20f))
-        staticCamera.parent = raumschiff
+        thirdPersonCamera.rotateLocal(Math.toRadians(-35.0f), 0f, 0f)
+        thirdPersonCamera.translateLocal(Vector3f(0f, 0.0f, 10f))
+        thirdPersonCamera.parent = raumschiff
 
+        firstPersonCamera.rotateLocal(Math.toRadians(-35.0f), 0f, 0f)
+        firstPersonCamera.translateLocal(Vector3f(0f, 0.0f, -5f))
+        firstPersonCamera.parent = raumschiff
 
-
-
-        /*
-        staticCamera1.rotateLocal(Math.toRadians(0f),0f,0f)
-        staticCamera1.translateLocal(Vector3f(0f,0f,-12.5f))
-        staticCamera1.parent = raumschiff
-         */
 
 
         for (i in 0 until 50) {
@@ -132,11 +125,11 @@ class Scene(private val window: GameWindow) {
 
         glClear(GL_COLOR_BUFFER_BIT or GL_DEPTH_BUFFER_BIT)
         staticShader.use()
-        staticCamera.bind(staticShader)
+        activeCamera.bind(staticShader)
         skybox.render(
             skyboxShader,
-            staticCamera.getCalculateViewMatrix(),
-            staticCamera.getCalculateProjectionMatrix()
+            activeCamera.getCalculateViewMatrix(),
+            activeCamera.getCalculateProjectionMatrix()
         )
         staticShader.use()
         pointLight.bind(staticShader, "PointLight")
@@ -144,8 +137,8 @@ class Scene(private val window: GameWindow) {
         pointLight3.bind(staticShader, "PointLight3")
         pointLight4.bind(staticShader, "PointLight4")
         pointLight5.bind(staticShader, "PointLight5")
-        spotLight.bind(staticShader, "SpotLight", tronCamera.getCalculateViewMatrix())
-        spotLight2.bind(staticShader, "SpotLight2", tronCamera.getCalculateViewMatrix())
+        spotLight.bind(staticShader, "SpotLight", activeCamera.getCalculateViewMatrix())
+        spotLight2.bind(staticShader, "SpotLight2", activeCamera.getCalculateViewMatrix())
         planet0?.render(staticShader)
         raumschiff?.render(staticShader)
 
@@ -156,8 +149,8 @@ class Scene(private val window: GameWindow) {
                 points++
                 println("You scored a point! Current Points : $points")
             }
+            lost = CollisionDetection.randtreffer(it, raumschiff)
         }
-
     }
 
     fun update(dt: Float, t: Float) {
@@ -175,12 +168,11 @@ class Scene(private val window: GameWindow) {
         if (window.getKeyState(GLFW.GLFW_KEY_S)) {
             raumschiff?.rotateLocal(Math.toRadians(dt * -30f), 0f, 0f)
         }
-        if(window.getKeyState(GLFW.GLFW_KEY_C)){
-
-            print("Planet 0:"+planet0?.getWorldPosition())
+        if(window.getKeyState(GLFW.GLFW_KEY_1)){
+            activeCamera = thirdPersonCamera
         }
-        if(window.getKeyState(GLFW.GLFW_KEY_X)){
-            print("Camera 1")
+        if(window.getKeyState(GLFW.GLFW_KEY_2)){
+            activeCamera = firstPersonCamera
         }
     }
 
