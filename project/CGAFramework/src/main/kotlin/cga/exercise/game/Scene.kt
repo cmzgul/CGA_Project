@@ -9,10 +9,12 @@ import cga.exercise.components.texture.Skybox
 import cga.framework.GLError
 import cga.framework.GameWindow
 import cga.framework.ModelLoader
+import cga.framework.OBJLoader
 import org.joml.Math
 import org.joml.Vector3f
 import org.lwjgl.glfw.GLFW
 import org.lwjgl.opengl.GL11.*
+import java.util.*
 import kotlin.collections.ArrayList
 
 
@@ -27,6 +29,8 @@ class Scene(private val window: GameWindow) {
     private val tronCamera = TronCamera(90f, 16f / 9f, 0.1f, 1000f)
     private var activeCamera = 0
     private var staticCamera = tronCamera
+    private var staticCamera1 = tronCamera
+
     private val raumschiff = ModelLoader.loadModel(
         "assets/models/spaceship/Intergalactic_Spaceship-(Wavefront).obj",
         Math.toRadians(180f),
@@ -34,9 +38,17 @@ class Scene(private val window: GameWindow) {
         Math.toRadians(0f)
     )
 
+    private val planet0 = ModelLoader.loadModel(
+            "assets/models/planet0/Jupiter.obj",
+            0f,
+            0f,
+            0f
+    )
+
     private val rings = ArrayList<Renderable?>()
     private var ringCounter = -500f
     private var points = 0;
+
 
     private val pointLight: PointLight
     private val pointLight2: PointLight
@@ -72,7 +84,12 @@ class Scene(private val window: GameWindow) {
         glEnable(GL_DEPTH_TEST); GLError.checkThrow()
         glDepthFunc(GL_LEQUAL); GLError.checkThrow()
 
+
         raumschiff?.scaleLocal(Vector3f(0.08f))
+
+
+        planet0?.scaleLocal(Vector3f(1f))
+        planet0?.translateLocal(Vector3f(0f, -40f ,-1000f))
 
 
         pointLight = PointLight(Vector3f(0.0f, 0.5f, 0.0f), Vector3f(2.0f, 0.0f, 1.0f), Vector3f(1.0f, 0.5f, 0.1f))
@@ -92,8 +109,18 @@ class Scene(private val window: GameWindow) {
         spotLight2.rotateLocal(Math.toRadians(-90.0f), 0f, 0f)
 
         staticCamera.rotateLocal(Math.toRadians(-35.0f), 0f, 0f)
-        staticCamera.translateLocal(Vector3f(0f, 0.0f, 10f))
+        staticCamera.translateLocal(Vector3f(0f, 0.0f, 20f))
         staticCamera.parent = raumschiff
+
+
+
+
+        /*
+        staticCamera1.rotateLocal(Math.toRadians(0f),0f,0f)
+        staticCamera1.translateLocal(Vector3f(0f,0f,-12.5f))
+        staticCamera1.parent = raumschiff
+         */
+
 
         for (i in 0 until 50) {
             spawnRings()
@@ -119,7 +146,9 @@ class Scene(private val window: GameWindow) {
         pointLight5.bind(staticShader, "PointLight5")
         spotLight.bind(staticShader, "SpotLight", tronCamera.getCalculateViewMatrix())
         spotLight2.bind(staticShader, "SpotLight2", tronCamera.getCalculateViewMatrix())
+        planet0?.render(staticShader)
         raumschiff?.render(staticShader)
+
         rings.forEach {
             it?.render(staticShader)
             it?.gotHit(raumschiff)
@@ -128,6 +157,7 @@ class Scene(private val window: GameWindow) {
                 println("You scored a point! Current Points : $points")
             }
         }
+
     }
 
     fun update(dt: Float, t: Float) {
@@ -144,6 +174,13 @@ class Scene(private val window: GameWindow) {
         }
         if (window.getKeyState(GLFW.GLFW_KEY_S)) {
             raumschiff?.rotateLocal(Math.toRadians(dt * -30f), 0f, 0f)
+        }
+        if(window.getKeyState(GLFW.GLFW_KEY_C)){
+
+            print("Planet 0:"+planet0?.getWorldPosition())
+        }
+        if(window.getKeyState(GLFW.GLFW_KEY_X)){
+            print("Camera 1")
         }
     }
 
