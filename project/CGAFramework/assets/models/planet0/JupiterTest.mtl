@@ -1,0 +1,12 @@
+# Blender MTL File: 'Jupiter.blend'
+# Material Count: 1
+
+newmtl Material.001
+Ns 9.537193
+Ka 0.227942 0.227942 0.227942
+Kd 0.800000 0.080465 0.080465
+Ks 0.161765 0.161765 0.161765
+Ke 0.000000 0.000000 0.000000
+Ni 1.000000
+d 1.000000
+illum 3
