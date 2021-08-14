@@ -36,7 +36,7 @@ class Scene(private val window: GameWindow) {
     )
 
     private val planet0 = ModelLoader.loadModel(
-            "assets/models/planet0/Jupiter.obj",
+            "assets/models/planet0/JupiterTest.obj",
             0f,
             0f,
             0f
@@ -85,8 +85,8 @@ class Scene(private val window: GameWindow) {
         raumschiff?.scaleLocal(Vector3f(0.08f))
 
 
-        planet0?.scaleLocal(Vector3f(1f))
-        planet0?.translateLocal(Vector3f(0f, -40f ,-1000f))
+        planet0?.scaleLocal(Vector3f(6f))
+        planet0?.translateLocal(Vector3f(0f, 0f ,-100f))
 
 
         pointLight = PointLight(Vector3f(0.0f, 0.5f, 0.0f), Vector3f(2.0f, 0.0f, 1.0f), Vector3f(1.0f, 0.5f, 0.1f))
