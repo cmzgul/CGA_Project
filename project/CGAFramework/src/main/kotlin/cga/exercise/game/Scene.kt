@@ -42,6 +42,13 @@ class Scene(private val window: GameWindow) {
             0f
     )
 
+    private val planet1 = ModelLoader.loadModel(
+            "assets/models/planet1/FictionalPlanet1.obj",
+            0f,
+            0f,
+            0f
+    )
+
     private val rings = ArrayList<Renderable?>()
     private var ringCounter = -500f
     private var points = 0;
@@ -90,6 +97,9 @@ class Scene(private val window: GameWindow) {
         planet0?.rotateLocal(0f,0f,-0.2f) //Schiefer Planet
         planet0?.translateGlobal(Vector3f(-700f, -150f ,-1200f))
         planet0?.scaleLocal(Vector3f(10f))
+
+        planet1?.translateGlobal(Vector3f(1100f, 350f ,-2400f))
+        planet1?.scaleLocal(Vector3f(20f))
 
 
         pointLight = PointLight(Vector3f(0.0f, 0.5f, 0.0f), Vector3f(2.0f, 0.0f, 1.0f), Vector3f(1.0f, 0.5f, 0.1f))
@@ -144,6 +154,7 @@ class Scene(private val window: GameWindow) {
         spotLight.bind(staticShader, "SpotLight", activeCamera.getCalculateViewMatrix())
         spotLight2.bind(staticShader, "SpotLight2", activeCamera.getCalculateViewMatrix())
         planet0?.render(staticShader)
+        planet1?.render(staticShader)
         raumschiff?.render(staticShader)
 
         rings.forEach {
@@ -158,7 +169,8 @@ class Scene(private val window: GameWindow) {
     }
 
     fun update(dt: Float, t: Float) {
-        planet0?.rotateLocal(0.001f,0.010f,0.0f) //Planet rotation
+        planet0?.rotateLocal(0f,0.007f,0.0f) //Planet rotation
+        planet1?.rotateLocal(0f,0.002f,0f) //Planet rotation
         raumschiff?.translateLocal(Vector3f(0f, 0f, -20f))
         if (window.getKeyState(GLFW.GLFW_KEY_A)) {
             raumschiff?.rotateLocal(0f, Math.toRadians(dt * 100f), Math.toRadians(dt * 10f))
