@@ -36,7 +36,7 @@ class Scene(private val window: GameWindow) {
     )
 
     private val planet0 = ModelLoader.loadModel(
-            "assets/models/planet0/JupiterTest.obj",
+            "assets/models/planet0/Jupiter_2.obj",
             0f,
             0f,
             0f
