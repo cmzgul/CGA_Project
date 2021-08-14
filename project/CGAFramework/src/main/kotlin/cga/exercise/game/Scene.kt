@@ -89,12 +89,14 @@ class Scene(private val window: GameWindow) {
         planet0?.translateLocal(Vector3f(0f, 0f ,-100f))
 
 
+
         pointLight = PointLight(Vector3f(0.0f, 0.5f, 0.0f), Vector3f(2.0f, 0.0f, 1.0f), Vector3f(1.0f, 0.5f, 0.1f))
         pointLight2 = PointLight(Vector3f(20.0f, 5f, 20.0f), Vector3f(2.0f, 0.0f, 0.0f), Vector3f(1.0f, 0.5f, 0.1f))
         pointLight3 = PointLight(Vector3f(-20.0f, 5f, 20.0f), Vector3f(0.0f, 2.0f, 0.0f), Vector3f(1.0f, 0.5f, 0.1f))
         pointLight4 = PointLight(Vector3f(20.0f, 5f, -20.0f), Vector3f(0.0f, 0.0f, 2.0f), Vector3f(1.0f, 0.5f, 0.1f))
         pointLight5 = PointLight(Vector3f(-20.0f, 5f, -20.0f), Vector3f(2.0f, 0.0f, 2.0f), Vector3f(1.0f, 0.5f, 0.1f))
         pointLight.parent = raumschiff
+
 
 
         spotLight = SpotLight(Vector3f(0f, 1f, 0f), Vector3f(1.0f, 1.0f, 1.0f), Vector3f(0.5f, 0.05f, 0.01f), 12.5f, 17.5f)
