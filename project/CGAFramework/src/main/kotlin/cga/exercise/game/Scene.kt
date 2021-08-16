@@ -71,6 +71,7 @@ class Scene(private val window: GameWindow) {
     private val rings = ArrayList<Renderable?>()
     private var ringCounter = -500f
     private var points = 0;
+    private var cameraPerspective = 0
 
     private var lost = false
 
@@ -151,10 +152,6 @@ class Scene(private val window: GameWindow) {
         firstPersonCamera.rotateLocal(Math.toRadians(0f), 0f, 0f)
         firstPersonCamera.translateLocal(Vector3f(0f, 0.0f, -5f))
         firstPersonCamera.parent = raumschiff
-
-        firstPersonCamera.rotateLocal(Math.toRadians(0f), 0f, 0f)
-        firstPersonCamera.translateLocal(Vector3f(0f, 0.0f, 10f))
-
     }
 
 
@@ -180,6 +177,11 @@ class Scene(private val window: GameWindow) {
                 activeCamera.getCalculateViewMatrix(),
                 activeCamera.getCalculateProjectionMatrix()
             )
+            if(cameraPerspective == 0)
+            {
+                cameraPerspective = 1
+                thirdPersonCamera.rotateLocal(Math.toRadians(-35f), 0f, 0f)
+            }
             staticShader.use()
             planet0?.render(staticShader)
             planet1?.render(staticShader)
@@ -197,6 +199,11 @@ class Scene(private val window: GameWindow) {
                 }
             }
         } else if (mode == 2) {
+            if(cameraPerspective == 1)
+            {
+                cameraPerspective = 0
+                thirdPersonCamera.rotateLocal(Math.toRadians(35f), 0f, 0f)
+            }
             raumschiff?.modelMatrix = Matrix4f()
             raumschiff?.translateLocal(Vector3f(0f, 0f, 500f)) //für einen einfacheren Start
             raumschiff?.scaleLocal(Vector3f(0.08f))
@@ -212,7 +219,6 @@ class Scene(private val window: GameWindow) {
 
     fun update(dt: Float, t: Float) {
         if (mode == 1) {
-            activeCamera = thirdPersonCamera
             planet0?.rotateLocal(0f, 0.007f, 0.0f) //Planet rotation
             planet1?.rotateLocal(0f, 0.002f, 0f) //Planet rotation
             raumschiff?.translateLocal(Vector3f(0f, 0f, speed))
@@ -223,10 +229,10 @@ class Scene(private val window: GameWindow) {
                 raumschiff?.rotateLocal(0f, Math.toRadians(dt * -100f), 0f)
             }
             if (window.getKeyState(GLFW.GLFW_KEY_W)) {
-                raumschiff?.rotateLocal(Math.toRadians(dt * 30f), 0f, 0f)
+                raumschiff?.rotateLocal(Math.toRadians(dt * 50f), 0f, 0f)
             }
             if (window.getKeyState(GLFW.GLFW_KEY_S)) {
-                raumschiff?.rotateLocal(Math.toRadians(dt * -30f), 0f, 0f)
+                raumschiff?.rotateLocal(Math.toRadians(dt * -50f), 0f, 0f)
             }
             if (window.getKeyState(GLFW.GLFW_KEY_1)) {
                 activeCamera = thirdPersonCamera
@@ -235,9 +241,9 @@ class Scene(private val window: GameWindow) {
                 activeCamera = firstPersonCamera
             }
             when(points){
-                10 -> speed = -25f
-                20 -> speed = -30f
-                30 -> speed = -35f
+                20 -> speed = -22f
+                40 -> speed = -25f
+                60 -> speed = -27f
             }
         }
         else{
