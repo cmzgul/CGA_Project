@@ -10,6 +10,7 @@ import cga.framework.GLError
 import cga.framework.GameWindow
 import cga.framework.ModelLoader
 import org.joml.Math
+import org.joml.Matrix4f
 import org.joml.Vector3f
 import org.lwjgl.glfw.GLFW
 import org.lwjgl.opengl.GL11.*
@@ -23,9 +24,13 @@ class Scene(private val window: GameWindow) {
     private val staticShader: ShaderProgram
     private val skyboxShader: ShaderProgram
 
+    private var mode = 0
+    private var speed = -20f
+
     private var meshes = arrayListOf<Mesh>()
     private val thirdPersonCamera = TronCamera(90f, 16f / 9f, 0.1f, 1200f)
     private var firstPersonCamera = TronCamera(90f, 16f / 9f, 0.1f, 1200f)
+    private var screenCamera = TronCamera(90f, 16f / 9f, 0.1f, 1200f)
     private var activeCamera = thirdPersonCamera
 
     private val raumschiff = ModelLoader.loadModel(
@@ -36,17 +41,31 @@ class Scene(private val window: GameWindow) {
     )
 
     private val planet0 = ModelLoader.loadModel(
-            "assets/models/planet0/Jupiter_2.obj",
-            0f,
-            0f,
-            0f
+        "assets/models/planet0/Jupiter_2.obj",
+        0f,
+        0f,
+        0f
+    )
+
+    private val homescreen = ModelLoader.loadModel(
+        "assets/models/screens/homescreenobj.obj",
+        Math.toRadians(0f),
+        Math.toRadians(270f),
+        Math.toRadians(0f)
+    )
+
+    private val replaysceen = ModelLoader.loadModel(
+        "assets/models/screens/replayscreenobj.obj",
+        Math.toRadians(0f),
+        Math.toRadians(270f),
+        Math.toRadians(0f)
     )
 
     private val planet1 = ModelLoader.loadModel(
-            "assets/models/planet1/FictionalPlanet1.obj",
-            0f,
-            0f,
-            0f
+        "assets/models/planet1/FictionalPlanet1.obj",
+        0f,
+        0f,
+        0f
     )
 
     private val rings = ArrayList<Renderable?>()
@@ -89,17 +108,22 @@ class Scene(private val window: GameWindow) {
         glDepthFunc(GL_LEQUAL); GLError.checkThrow()
 
 
-        raumschiff?.translateLocal(Vector3f(0f,0f,20f)) //für einen einfacheren Start
+        raumschiff?.translateLocal(Vector3f(0f, 0f, 500f)) //für einen einfacheren Start
         raumschiff?.scaleLocal(Vector3f(0.08f))
 
+        homescreen?.translateLocal(Vector3f(0f, 0f, -20f))
+        replaysceen?.translateLocal(Vector3f(0f, 0f, -20f))
+        homescreen?.scaleLocal(Vector3f(100f))
+        replaysceen?.scaleLocal(Vector3f(100f))
 
 
-        planet0?.rotateLocal(0f,0f,-0.2f) //Schiefer Planet
-        planet0?.translateGlobal(Vector3f(-700f, -150f ,-1200f))
+        planet0?.rotateLocal(0f, 0f, -0.2f) //Schiefer Planet
+        planet0?.translateGlobal(Vector3f(-700f, -150f, -1200f))
         planet0?.scaleLocal(Vector3f(10f))
 
-        planet1?.translateGlobal(Vector3f(1100f, 350f ,-2400f))
+        planet1?.translateGlobal(Vector3f(1100f, 350f, -2400f))
         planet1?.scaleLocal(Vector3f(20f))
+
 
 
         pointLight = PointLight(Vector3f(0.0f, 0.5f, 0.0f), Vector3f(2.0f, 0.0f, 1.0f), Vector3f(1.0f, 0.5f, 0.1f))
@@ -111,7 +135,8 @@ class Scene(private val window: GameWindow) {
 
 
 
-        spotLight = SpotLight(Vector3f(0f, 1f, 0f), Vector3f(1.0f, 1.0f, 1.0f), Vector3f(0.5f, 0.05f, 0.01f), 12.5f, 17.5f)
+        spotLight =
+            SpotLight(Vector3f(0f, 1f, 0f), Vector3f(1.0f, 1.0f, 1.0f), Vector3f(0.5f, 0.05f, 0.01f), 12.5f, 17.5f)
         spotLight.rotateLocal(Math.toRadians(-5.0f), 0f, 0f)
         spotLight.parent = raumschiff
 
@@ -119,32 +144,24 @@ class Scene(private val window: GameWindow) {
             SpotLight(Vector3f(0f, 5f, 0f), Vector3f(1.0f, 0.0f, 1.0f), Vector3f(0.5f, 0.05f, 0.01f), 10.5f, 20.5f)
         spotLight2.rotateLocal(Math.toRadians(-90.0f), 0f, 0f)
 
-        thirdPersonCamera.rotateLocal(Math.toRadians(-35.0f), 0f, 0f)
+        thirdPersonCamera.rotateLocal(Math.toRadians(0.0f), 0f, 0f)
         thirdPersonCamera.translateLocal(Vector3f(0f, 0.0f, 10f))
         thirdPersonCamera.parent = raumschiff
 
-        firstPersonCamera.rotateLocal(Math.toRadians(-35.0f), 0f, 0f)
+        firstPersonCamera.rotateLocal(Math.toRadians(0f), 0f, 0f)
         firstPersonCamera.translateLocal(Vector3f(0f, 0.0f, -5f))
         firstPersonCamera.parent = raumschiff
 
+        firstPersonCamera.rotateLocal(Math.toRadians(0f), 0f, 0f)
+        firstPersonCamera.translateLocal(Vector3f(0f, 0.0f, 10f))
 
-
-        for (i in 0 until 50) {
-            spawnRings()
-        }
     }
 
 
     fun render(dt: Float, t: Float) {
-
         glClear(GL_COLOR_BUFFER_BIT or GL_DEPTH_BUFFER_BIT)
         staticShader.use()
         activeCamera.bind(staticShader)
-        skybox.render(
-            skyboxShader,
-            activeCamera.getCalculateViewMatrix(),
-            activeCamera.getCalculateProjectionMatrix()
-        )
         staticShader.use()
         pointLight.bind(staticShader, "PointLight")
         pointLight2.bind(staticShader, "PointLight2")
@@ -153,43 +170,83 @@ class Scene(private val window: GameWindow) {
         pointLight5.bind(staticShader, "PointLight5")
         spotLight.bind(staticShader, "SpotLight", activeCamera.getCalculateViewMatrix())
         spotLight2.bind(staticShader, "SpotLight2", activeCamera.getCalculateViewMatrix())
-        planet0?.render(staticShader)
-        planet1?.render(staticShader)
-        raumschiff?.render(staticShader)
+        spawnRings()
 
-        rings.forEach {
-            it?.render(staticShader)
-            it?.gotHit(raumschiff)
-            if (it?.hit == 1) {
-                points++
-                println("You scored a point! Current Points : $points")
+        if (mode == 0) {
+            homescreen?.render(staticShader)
+        } else if (mode == 1) {
+            skybox.render(
+                skyboxShader,
+                activeCamera.getCalculateViewMatrix(),
+                activeCamera.getCalculateProjectionMatrix()
+            )
+            staticShader.use()
+            planet0?.render(staticShader)
+            planet1?.render(staticShader)
+            raumschiff?.render(staticShader)
+
+            rings.forEach {
+                it?.render(staticShader)
+                it?.gotHit(raumschiff)
+                if (it?.hit == 1) {
+                    points++
+                    println("You scored a point! Current Points : $points")
+                }
+                else if (CollisionDetection.randtreffer(it, raumschiff)) {
+                    mode = 2
+                }
             }
-            lost = CollisionDetection.randtreffer(it, raumschiff)
+        } else if (mode == 2) {
+            raumschiff?.modelMatrix = Matrix4f()
+            raumschiff?.translateLocal(Vector3f(0f, 0f, 500f)) //für einen einfacheren Start
+            raumschiff?.scaleLocal(Vector3f(0.08f))
+            replaysceen?.render(staticShader)
+            points = 0
+            ringCounter = -500f
+            speed = -20f
+            rings.clear()
         }
+
+
     }
 
     fun update(dt: Float, t: Float) {
-        planet0?.rotateLocal(0f,0.007f,0.0f) //Planet rotation
-        planet1?.rotateLocal(0f,0.002f,0f) //Planet rotation
-        raumschiff?.translateLocal(Vector3f(0f, 0f, -20f))
-        if (window.getKeyState(GLFW.GLFW_KEY_A)) {
-            raumschiff?.rotateLocal(0f, Math.toRadians(dt * 100f), Math.toRadians(dt * 10f))
-        }
-        if (window.getKeyState(GLFW.GLFW_KEY_D)) {
-            raumschiff?.rotateLocal(0f, Math.toRadians(dt * -100f), Math.toRadians(dt * -10f))
-        }
-        if (window.getKeyState(GLFW.GLFW_KEY_W)) {
-            raumschiff?.rotateLocal(Math.toRadians(dt * 30f), 0f, 0f)
-        }
-        if (window.getKeyState(GLFW.GLFW_KEY_S)) {
-            raumschiff?.rotateLocal(Math.toRadians(dt * -30f), 0f, 0f)
-        }
-        if(window.getKeyState(GLFW.GLFW_KEY_1)){
+        if (mode == 1) {
             activeCamera = thirdPersonCamera
+            planet0?.rotateLocal(0f, 0.007f, 0.0f) //Planet rotation
+            planet1?.rotateLocal(0f, 0.002f, 0f) //Planet rotation
+            raumschiff?.translateLocal(Vector3f(0f, 0f, speed))
+            if (window.getKeyState(GLFW.GLFW_KEY_A)) {
+                raumschiff?.rotateLocal(0f, Math.toRadians(dt * 100f), 0f)
+            }
+            if (window.getKeyState(GLFW.GLFW_KEY_D)) {
+                raumschiff?.rotateLocal(0f, Math.toRadians(dt * -100f), 0f)
+            }
+            if (window.getKeyState(GLFW.GLFW_KEY_W)) {
+                raumschiff?.rotateLocal(Math.toRadians(dt * 30f), 0f, 0f)
+            }
+            if (window.getKeyState(GLFW.GLFW_KEY_S)) {
+                raumschiff?.rotateLocal(Math.toRadians(dt * -30f), 0f, 0f)
+            }
+            if (window.getKeyState(GLFW.GLFW_KEY_1)) {
+                activeCamera = thirdPersonCamera
+            }
+            if (window.getKeyState(GLFW.GLFW_KEY_2)) {
+                activeCamera = firstPersonCamera
+            }
+            when(points){
+                10 -> speed = -25f
+                20 -> speed = -30f
+                30 -> speed = -35f
+            }
         }
-        if(window.getKeyState(GLFW.GLFW_KEY_2)){
-            activeCamera = firstPersonCamera
+        else{
+            if (window.getKeyState(GLFW.GLFW_KEY_SPACE)) {
+                mode = 1
+                lost = false
+            }
         }
+
     }
 
 
@@ -197,7 +254,7 @@ class Scene(private val window: GameWindow) {
 
     }
 
-    fun onMouseMove(xpos: Double, ypos: Double){
+    fun onMouseMove(xpos: Double, ypos: Double) {
     }
 
     fun cleanup() {}
@@ -205,7 +262,13 @@ class Scene(private val window: GameWindow) {
     fun spawnRings() {
         var newRing = ModelLoader.loadModel("assets/models/ring/ring2.obj", 0f, 0f, 0f)
         rings.add(newRing)
-        rings[rings.size - 1]?.translateLocal(Vector3f((Math.random() * 200f + 1f).toFloat(), (Math.random() * 200f + 1f).toFloat(), -ringCounter))
+        rings[rings.size - 1]?.translateLocal(
+            Vector3f(
+                (Math.random() * 200f + 1f).toFloat(),
+                (Math.random() * 200f + 1f).toFloat(),
+                -ringCounter
+            )
+        )
         rings[rings.size - 1]?.scaleLocal(Vector3f(0.5f))
         ringCounter += 400f
     }

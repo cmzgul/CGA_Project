@@ -16,7 +16,7 @@ class Renderable (var meshes : MutableList<Mesh> = mutableListOf(), modelMatrix:
     }
 
     fun gotHit(otherRenderable : Renderable?){
-        if(CollisionDetection.checkCollision(otherRenderable, this) < 0)
+        if(CollisionDetection.checkCollision(otherRenderable, this))
             hit++
     }
 }
