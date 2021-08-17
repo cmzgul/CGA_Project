@@ -6,6 +6,7 @@ import cga.exercise.components.light.PointLight
 import cga.exercise.components.light.SpotLight
 import cga.exercise.components.shader.ShaderProgram
 import cga.exercise.components.texture.Skybox
+import cga.exercise.components.texture.Texture2D
 import cga.framework.GLError
 import cga.framework.GameWindow
 import cga.framework.ModelLoader
@@ -14,6 +15,7 @@ import org.joml.Matrix4f
 import org.joml.Vector3f
 import org.lwjgl.glfw.GLFW
 import org.lwjgl.opengl.GL11.*
+import org.lwjgl.opengl.GL12
 import kotlin.collections.ArrayList
 
 
@@ -26,6 +28,7 @@ class Scene(private val window: GameWindow) {
 
     private var mode = 0
     private var speed = -20f
+    private var status = 2f
 
     private var meshes = arrayListOf<Mesh>()
     private val thirdPersonCamera = TronCamera(90f, 16f / 9f, 0.1f, 1200f)
@@ -83,6 +86,11 @@ class Scene(private val window: GameWindow) {
     private val spotLight: SpotLight
     private val spotLight2: SpotLight
 
+    private val colors = ArrayList<Vector3f>()
+    private var currentColor = 0
+
+    private val ringhittexture : Texture2D
+
     private var skybox = Skybox()
     private var skyBoxTextures = ArrayList<String>()
 
@@ -127,7 +135,7 @@ class Scene(private val window: GameWindow) {
 
 
 
-        pointLight = PointLight(Vector3f(0.0f, 0.5f, 0.0f), Vector3f(2.0f, 0.0f, 1.0f), Vector3f(1.0f, 0.5f, 0.1f))
+        pointLight = PointLight(Vector3f(1.0f, 1.0f, 0.0f), Vector3f(0.0f, 0.0f, 2.0f), Vector3f(1.0f, 0.5f, 0.1f))
         pointLight2 = PointLight(Vector3f(20.0f, 5f, 20.0f), Vector3f(2.0f, 0.0f, 0.0f), Vector3f(1.0f, 0.5f, 0.1f))
         pointLight3 = PointLight(Vector3f(-20.0f, 5f, 20.0f), Vector3f(0.0f, 2.0f, 0.0f), Vector3f(1.0f, 0.5f, 0.1f))
         pointLight4 = PointLight(Vector3f(20.0f, 5f, -20.0f), Vector3f(0.0f, 0.0f, 2.0f), Vector3f(1.0f, 0.5f, 0.1f))
@@ -145,13 +153,23 @@ class Scene(private val window: GameWindow) {
             SpotLight(Vector3f(0f, 5f, 0f), Vector3f(1.0f, 0.0f, 1.0f), Vector3f(0.5f, 0.05f, 0.01f), 10.5f, 20.5f)
         spotLight2.rotateLocal(Math.toRadians(-90.0f), 0f, 0f)
 
-        thirdPersonCamera.rotateLocal(Math.toRadians(0.0f), 0f, 0f)
         thirdPersonCamera.translateLocal(Vector3f(0f, 0.0f, 10f))
         thirdPersonCamera.parent = raumschiff
 
         firstPersonCamera.rotateLocal(Math.toRadians(0f), 0f, 0f)
         firstPersonCamera.translateLocal(Vector3f(0f, 0.0f, -5f))
         firstPersonCamera.parent = raumschiff
+
+        colors.add(Vector3f(1f, 0f, 1f))
+        colors.add(Vector3f(0f, 1f, 1f))
+        colors.add(Vector3f(1f, 1f, 0f))
+        colors.add(Vector3f(1f, 0f, 1f))
+        colors.add(Vector3f(0f, 0f, 1f))
+        colors.add(Vector3f(1f, 0f, 0f))
+        colors.add(Vector3f(0f, 1f, 0f))
+
+        ringhittexture = Texture2D.invoke("assets/models/ring/ring_hit_emit.png", true)
+        ringhittexture.setTexParams(GL12.GL_CLAMP_TO_EDGE, GL12.GL_CLAMP_TO_EDGE, GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR_MIPMAP_LINEAR)
     }
 
 
@@ -180,7 +198,7 @@ class Scene(private val window: GameWindow) {
             if(cameraPerspective == 0)
             {
                 cameraPerspective = 1
-                thirdPersonCamera.rotateLocal(Math.toRadians(-35f), 0f, 0f)
+                thirdPersonCamera.translateLocal(Vector3f(0f, 0f, 2f))
             }
             staticShader.use()
             planet0?.render(staticShader)
@@ -193,8 +211,16 @@ class Scene(private val window: GameWindow) {
                 if (it?.hit == 1) {
                     points++
                     println("You scored a point! Current Points : $points")
+                    it.meshes[0].material?.emit = ringhittexture
+                    if(points % 10 == 0)
+                    {
+                        currentColor++
+                        if(currentColor == 7)
+                            currentColor = 0
+                        pointLight.col = colors[currentColor]
+                    }
                 }
-                else if (CollisionDetection.randtreffer(it, raumschiff)) {
+                else if (CollisionDetection.randtreffer(it, raumschiff, status)){
                     mode = 2
                 }
             }
@@ -202,7 +228,7 @@ class Scene(private val window: GameWindow) {
             if(cameraPerspective == 1)
             {
                 cameraPerspective = 0
-                thirdPersonCamera.rotateLocal(Math.toRadians(35f), 0f, 0f)
+                thirdPersonCamera.translateLocal(Vector3f(0f, 0f, -2f))
             }
             raumschiff?.modelMatrix = Matrix4f()
             raumschiff?.translateLocal(Vector3f(0f, 0f, 500f)) //für einen einfacheren Start
@@ -240,10 +266,20 @@ class Scene(private val window: GameWindow) {
             if (window.getKeyState(GLFW.GLFW_KEY_2)) {
                 activeCamera = firstPersonCamera
             }
-            when(points){
-                20 -> speed = -22f
-                40 -> speed = -25f
-                60 -> speed = -27f
+            if(points == 20)
+            {
+                speed = -20.5f
+                status = 4f
+            }
+            else if(points == 40)
+            {
+                speed = -21f
+                status = 6f
+            }
+            else if(points == 60)
+            {
+                speed = -21.5f
+                status = 8f
             }
         }
         else{
