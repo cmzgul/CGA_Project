@@ -126,16 +126,17 @@ class Scene(private val window: GameWindow) {
         homescreen?.scaleLocal(Vector3f(100f))
         replaysceen?.scaleLocal(Vector3f(100f))
 
-        planet0?.parent = planet1
 
-        planet0?.rotateLocal(0f, 0f, -0.2f) //Schiefer Planet
-        planet0?.translateGlobal(Vector3f(-700f, -150f, 0f))
-        planet0?.scaleLocal(Vector3f(10f))
+
+        planet0?.rotateLocal(0f, 0f, 0f) //Schiefer Planet
+        planet0?.translateLocal(Vector3f(0f,0f,20f))
+        planet0?.scaleLocal(Vector3f(0.3f))
+        planet0?.rotateLocal(0f, 0.01f, 0f) //Planet rotations
 
         planet1?.translateGlobal(Vector3f(1100f, 350f, -1200f))
         planet1?.scaleLocal(Vector3f(20f))
 
-
+        planet0?.parent = planet1
 
 
         pointLight = PointLight(Vector3f(1.0f, 1.0f, 0.0f), Vector3f(0.0f, 0.0f, 2.0f), Vector3f(1.0f, 0.5f, 0.1f))
@@ -251,7 +252,7 @@ class Scene(private val window: GameWindow) {
     fun update(dt: Float, t: Float) {
         if (mode == 1) {
 
-            planet1?.rotateLocal(0f, 0.002f, 0f) //Planet rotation
+            planet1?.rotateLocal(0f, 0.01f, 0f) //Planet rotations
 
            // planet0?.rotateLocal(0f, 0.007f, 0.0f) //Planet rotation
            // planet1?.rotateLocal(0f, 0.002f, 0f) //Planet rotation
