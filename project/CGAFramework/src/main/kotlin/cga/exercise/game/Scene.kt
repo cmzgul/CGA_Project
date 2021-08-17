@@ -26,12 +26,10 @@ class Scene(private val window: GameWindow) {
 
     private var mode = 0
     private var speed = -20f
-    private var status = 2f
 
-    private var meshes = arrayListOf<Mesh>()
+
     private val thirdPersonCamera = TronCamera(90f, 16f / 9f, 0.1f, 1200f)
     private var firstPersonCamera = TronCamera(90f, 16f / 9f, 0.1f, 1200f)
-    private var screenCamera = TronCamera(90f, 16f / 9f, 0.1f, 1200f)
     private var activeCamera = thirdPersonCamera
 
     private val raumschiff = ModelLoader.loadModel(
@@ -70,8 +68,9 @@ class Scene(private val window: GameWindow) {
     )
 
     private val rings = ArrayList<Renderable?>()
-    private var ringCounter = -500f
-    private var points = 0;
+    private var ringZPos = 0f
+    private var points = 0
+    private var pointsResetable = 0
     private var cameraPerspective = 0
 
     private var lost = false
@@ -92,9 +91,6 @@ class Scene(private val window: GameWindow) {
     private var skybox = Skybox()
     private var skyBoxTextures = ArrayList<String>()
 
-    //sceneGraph
-    private var m = Matrix4fStack()
-    private var current = Matrix4f()
 
     //scene setup
     init {
@@ -126,16 +122,16 @@ class Scene(private val window: GameWindow) {
         homescreen?.scaleLocal(Vector3f(100f))
         replaysceen?.scaleLocal(Vector3f(100f))
 
+        planet0?.parent = planet1
 
-
-        planet0?.translateLocal(Vector3f(0f,0f,20f))
-        planet0?.scaleLocal(Vector3f(0.3f))
-        planet0?.rotateLocal(0f, 0.01f, 0f) //Planet rotations
+        planet0?.rotateLocal(0f, 0f, -0.2f) //Schiefer Planet
+        planet0?.translateGlobal(Vector3f(-700f, -150f, -200f))
+        planet0?.scaleLocal(Vector3f(5f))
 
         planet1?.translateGlobal(Vector3f(1100f, 350f, -1200f))
         planet1?.scaleLocal(Vector3f(20f))
 
-        planet0?.parent = planet1
+
 
 
         pointLight = PointLight(Vector3f(1.0f, 1.0f, 0.0f), Vector3f(0.0f, 0.0f, 2.0f), Vector3f(1.0f, 0.5f, 0.1f))
@@ -190,7 +186,16 @@ class Scene(private val window: GameWindow) {
         pointLight5.bind(staticShader, "PointLight5")
         spotLight.bind(staticShader, "SpotLight", activeCamera.getCalculateViewMatrix())
         spotLight2.bind(staticShader, "SpotLight2", activeCamera.getCalculateViewMatrix())
-        spawnRings()
+
+        if(rings.size < 10)
+        {
+            spawnRings()
+        }
+        if(pointsResetable == 10)
+        {
+            pointsResetable = 0
+            rings.clear()
+        }
 
         if (mode == 0) {
             homescreen?.render(staticShader)
@@ -215,8 +220,9 @@ class Scene(private val window: GameWindow) {
                 it?.gotHit(raumschiff)
                 if (it?.hit == 1) {
                     points++
+                    pointsResetable++
                     println("You scored a point! Current Points : $points")
-                    it.meshes[0].material?.emit = ringhittexture
+                    it.meshes[0].changeTexture(1, ringhittexture)
                     if(points % 10 == 0)
                     {
                         currentColor++
@@ -225,7 +231,7 @@ class Scene(private val window: GameWindow) {
                         pointLight.col = colors[currentColor]
                     }
                 }
-                else if (CollisionDetection.randtreffer(it, raumschiff, status)){
+                else if (CollisionDetection.randtreffer(it, raumschiff)){
                     mode = 2
                 }
             }
@@ -240,7 +246,8 @@ class Scene(private val window: GameWindow) {
             raumschiff?.scaleLocal(Vector3f(0.08f))
             replaysceen?.render(staticShader)
             points = 0
-            ringCounter = -500f
+            pointsResetable = 0
+            ringZPos = 0f
             speed = -20f
             rings.clear()
         }
@@ -251,8 +258,7 @@ class Scene(private val window: GameWindow) {
     fun update(dt: Float, t: Float) {
         if (mode == 1) {
 
-            planet1?.rotateLocal(0f, 0.01f, 0f) //Planet rotations
-            
+            planet1?.rotateLocal(0f, 0.002f, 0f) //Planet rotation
             raumschiff?.translateLocal(Vector3f(0f, 0f, speed))
             if (window.getKeyState(GLFW.GLFW_KEY_A)) {
                 raumschiff?.rotateLocal(0f, Math.toRadians(dt * 100f), 0f)
@@ -272,20 +278,17 @@ class Scene(private val window: GameWindow) {
             if (window.getKeyState(GLFW.GLFW_KEY_2)) {
                 activeCamera = firstPersonCamera
             }
-            if(points == 20)
+            if(points == 5)
             {
-                speed = -20.5f
-                status = 4f
+                speed = -25f
             }
-            else if(points == 40)
+            else if(points == 10)
             {
-                speed = -21f
-                status = 6f
+                speed = -30f
             }
-            else if(points == 60)
+            else if(points == 15)
             {
-                speed = -21.5f
-                status = 8f
+                speed = -35f
             }
         }
         else{
@@ -314,11 +317,11 @@ class Scene(private val window: GameWindow) {
             Vector3f(
                 (Math.random() * 200f + 1f).toFloat(),
                 (Math.random() * 200f + 1f).toFloat(),
-                -ringCounter
+                ringZPos
             )
         )
         rings[rings.size - 1]?.scaleLocal(Vector3f(0.5f))
-        ringCounter += 400f
+        ringZPos -= 400f
     }
 }
 

@@ -1,6 +1,7 @@
 package cga.exercise.components.geometry
 
 import cga.exercise.components.shader.ShaderProgram
+import cga.exercise.components.texture.Texture2D
 import org.lwjgl.opengl.GL11
 import org.lwjgl.opengl.GL15
 import org.lwjgl.opengl.GL20
@@ -16,7 +17,7 @@ import org.lwjgl.opengl.GL30
  *
  * Created by Fabian on 16.09.2017.
  */
-class Mesh(vertexdata: FloatArray, indexdata: IntArray, attributes: Array<VertexAttribute>, var material: Material? = null) {
+class Mesh(vertexdata: FloatArray, indexdata: IntArray, attributes: Array<VertexAttribute>,private var material: Material? = null) {
     //private data
     private var vao = 0
     private var vbo = 0
@@ -61,6 +62,14 @@ class Mesh(vertexdata: FloatArray, indexdata: IntArray, attributes: Array<Vertex
     fun render(shaderProgram: ShaderProgram) {
         material?.bind(shaderProgram)
         render()
+    }
+
+    fun changeTexture(textureNumber : Int, texture : Texture2D){
+        when(textureNumber){
+            0 -> material?.diff = texture
+            1 -> material?.emit = texture
+            2 -> material?.specular = texture
+        }
     }
 
     /**

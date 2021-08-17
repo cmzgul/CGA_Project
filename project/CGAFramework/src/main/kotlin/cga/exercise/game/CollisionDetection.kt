@@ -10,6 +10,6 @@ class CollisionDetection {
             return distance!! <= 35f
         }
 
-        fun randtreffer(obj1: Renderable?, obj2: Renderable?, status : Float) = !checkCollision(obj1, obj2) && abs(obj1!!.getPosition().z.toInt() - obj2!!.getPosition().z.toInt()) < status
+        fun randtreffer(obj1: Renderable?, obj2: Renderable?) = !checkCollision(obj1, obj2) && obj1!!.getPosition().z.toInt() == obj2!!.getPosition().z.toInt()
     }
 }
