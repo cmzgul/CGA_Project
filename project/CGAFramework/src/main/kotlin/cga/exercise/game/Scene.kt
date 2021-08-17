@@ -128,7 +128,6 @@ class Scene(private val window: GameWindow) {
 
 
 
-        planet0?.rotateLocal(0f, 0f, 0f) //Schiefer Planet
         planet0?.translateLocal(Vector3f(0f,0f,20f))
         planet0?.scaleLocal(Vector3f(0.3f))
         planet0?.rotateLocal(0f, 0.01f, 0f) //Planet rotations
@@ -253,9 +252,7 @@ class Scene(private val window: GameWindow) {
         if (mode == 1) {
 
             planet1?.rotateLocal(0f, 0.01f, 0f) //Planet rotations
-
-           // planet0?.rotateLocal(0f, 0.007f, 0.0f) //Planet rotation
-           // planet1?.rotateLocal(0f, 0.002f, 0f) //Planet rotation
+            
             raumschiff?.translateLocal(Vector3f(0f, 0f, speed))
             if (window.getKeyState(GLFW.GLFW_KEY_A)) {
                 raumschiff?.rotateLocal(0f, Math.toRadians(dt * 100f), 0f)
