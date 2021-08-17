@@ -10,9 +10,7 @@ import cga.exercise.components.texture.Texture2D
 import cga.framework.GLError
 import cga.framework.GameWindow
 import cga.framework.ModelLoader
-import org.joml.Math
-import org.joml.Matrix4f
-import org.joml.Vector3f
+import org.joml.*
 import org.lwjgl.glfw.GLFW
 import org.lwjgl.opengl.GL11.*
 import org.lwjgl.opengl.GL12
@@ -94,6 +92,9 @@ class Scene(private val window: GameWindow) {
     private var skybox = Skybox()
     private var skyBoxTextures = ArrayList<String>()
 
+    //sceneGraph
+    private var m = Matrix4fStack()
+    private var current = Matrix4f()
 
     //scene setup
     init {
@@ -170,6 +171,23 @@ class Scene(private val window: GameWindow) {
 
         ringhittexture = Texture2D.invoke("assets/models/ring/ring_hit_emit.png", true)
         ringhittexture.setTexParams(GL12.GL_CLAMP_TO_EDGE, GL12.GL_CLAMP_TO_EDGE, GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR_MIPMAP_LINEAR)
+
+        /*SceneGraph .Car
+        m.pushMatrix()
+        m.rotateLocal(0f, 0.007f, 0.0f,0f)
+        m.get(current)
+        render()
+        */
+
+        /* .Wheel
+        for
+        m.push
+        m.translate
+        m.rotate
+        render
+        m.pop
+         */
+        //m.pop
     }
 
 
@@ -178,6 +196,7 @@ class Scene(private val window: GameWindow) {
         staticShader.use()
         activeCamera.bind(staticShader)
         staticShader.use()
+
         pointLight.bind(staticShader, "PointLight")
         pointLight2.bind(staticShader, "PointLight2")
         pointLight3.bind(staticShader, "PointLight3")
@@ -245,8 +264,8 @@ class Scene(private val window: GameWindow) {
 
     fun update(dt: Float, t: Float) {
         if (mode == 1) {
-            planet0?.rotateLocal(0f, 0.007f, 0.0f) //Planet rotation
-            planet1?.rotateLocal(0f, 0.002f, 0f) //Planet rotation
+          // planet0?.rotateLocal(0f, 0.007f, 0.0f) //Planet rotation
+           // planet1?.rotateLocal(0f, 0.002f, 0f) //Planet rotation
             raumschiff?.translateLocal(Vector3f(0f, 0f, speed))
             if (window.getKeyState(GLFW.GLFW_KEY_A)) {
                 raumschiff?.rotateLocal(0f, Math.toRadians(dt * 100f), 0f)
