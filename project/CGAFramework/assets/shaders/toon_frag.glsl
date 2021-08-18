@@ -3,7 +3,7 @@
 //input from vertex shader
 
 in vec2 tc0;
-in vec3 Normal, toLight, toCamera, spotLight, spotLightFront;
+in vec3 Normal, toLight, toCamera, spotLight;
 
 struct Material{
     sampler2D diff;
@@ -12,21 +12,26 @@ struct Material{
     float shininess;
 };
 
+const float levels = 3.0f;
 
 uniform Material material;
 uniform vec3 PointLightColor, PointLightAttenuationFactors;
 uniform vec3 SpotLightColor, SpotLightDirection, SpotLightAttenuationFactors;
 uniform float SpotLightOuterAngle, SpotLightInnerAngle;
 
-uniform vec3 SpotLightFrontColor, SpotLightFrontDirection, SpotLightFrontAttenuationFactors;
-uniform float SpotLightFrontOuterAngle, SpotLightFrontInnerAngle;
 
 //fragment shader output
 out vec4 color;
 
 vec3 BRDF(vec3 N, vec3 L, vec3 V, vec3 R, float shininess){
     vec3 halfDir = normalize(L + V);
-    return texture(material.diff, tc0).xyz * max(dot(N, L), 0.0f) + texture(material.specular, tc0).xyz * pow(max(dot(N, halfDir), 0.0), shininess);
+    float brightness = max(dot(N, L), 0.0f);
+    float level = floor(brightness * levels);
+    brightness = level / levels;
+    float dampedFactor = pow(max(dot(N, halfDir), 0.0f), shininess);
+    level = floor(dampedFactor * levels);
+    dampedFactor = level / levels;
+    return texture(material.diff, tc0).xyz * brightness + texture(material.specular, tc0).xyz * dampedFactor;
 }
 
 float calculateAttenuation(vec3 attenuationFactors, vec3 toLight){
@@ -64,5 +69,4 @@ void main(){
     color += vec4(texture(material.diff, tc0).xyz, 1.0f);
     color += vec4(calculatePointLights(Normal, toLight, toCamera, PointLightColor, PointLightAttenuationFactors, material.shininess), 1.0f);
     color += vec4(calcSpotLight(Normal, spotLight, toCamera, SpotLightDirection, SpotLightInnerAngle, SpotLightOuterAngle, SpotLightColor, material.shininess, SpotLightAttenuationFactors), 1.0f);
-    color += vec4(calcSpotLight(Normal, spotLightFront, toCamera, SpotLightFrontDirection, SpotLightFrontInnerAngle, SpotLightFrontOuterAngle, SpotLightFrontColor, material.shininess, SpotLightFrontAttenuationFactors), 1.0f);
 }
