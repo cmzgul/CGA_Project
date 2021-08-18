@@ -15,9 +15,6 @@ struct Material{
 
 uniform Material material;
 uniform vec3 PointLightColor, PointLightAttenuationFactors;
-uniform vec3 SpotLightColor, SpotLightDirection, SpotLightAttenuationFactors;
-uniform float SpotLightOuterAngle, SpotLightInnerAngle;
-
 uniform vec3 SpotLightFrontColor, SpotLightFrontDirection, SpotLightFrontAttenuationFactors;
 uniform float SpotLightFrontOuterAngle, SpotLightFrontInnerAngle;
 
@@ -61,8 +58,7 @@ vec3 calculatePointLights(vec3 normal, vec3 pLight, vec3 vDir, vec3 color, vec3 
 
 void main(){
     color = vec4(texture(material.emit, tc0).xyz, 1.0f);
-    color += vec4(texture(material.diff, tc0).xyz, 1.0f);
+    color += vec4(texture(material.diff, tc0).xyz, 1.0f) * 0.1f;
     color += vec4(calculatePointLights(Normal, toLight, toCamera, PointLightColor, PointLightAttenuationFactors, material.shininess), 1.0f);
-    color += vec4(calcSpotLight(Normal, spotLight, toCamera, SpotLightDirection, SpotLightInnerAngle, SpotLightOuterAngle, SpotLightColor, material.shininess, SpotLightAttenuationFactors), 1.0f);
     color += vec4(calcSpotLight(Normal, spotLightFront, toCamera, SpotLightFrontDirection, SpotLightFrontInnerAngle, SpotLightFrontOuterAngle, SpotLightFrontColor, material.shininess, SpotLightFrontAttenuationFactors), 1.0f);
 }

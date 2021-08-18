@@ -12,10 +12,10 @@ uniform mat4 perspective;
 
 uniform vec2 tcMultiplier;
 
-uniform vec3 PointLightPosition ,SpotLightPosition;
+uniform vec3 PointLightPosition ,spotLightFrontPosition;
 
 out vec2 tc0;
-out vec3 Normal, toLight, toCamera, spotLight;
+out vec3 Normal, toLight, toCamera, spotLightFront;
 
 //
 void main(){
@@ -28,8 +28,8 @@ void main(){
     vec4 lp = view * vec4(PointLightPosition, 1.0f);
     toLight = (lp - pos).xyz;
 
-    vec4 sp = view * vec4(SpotLightPosition, 1.0f);
-    spotLight = (sp - pos).xyz;
+    vec4 sp = view * vec4(spotLightFrontPosition, 1.0f);
+    spotLightFront = (sp - pos).xyz;
 
     toCamera = -pos.xyz;
 

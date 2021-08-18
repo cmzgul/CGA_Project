@@ -78,7 +78,6 @@ class Scene(private val window: GameWindow) {
     private var lost = false
 
     private val pointLight: PointLight
-    private val spotLight : SpotLight
     private val spotLightFront : SpotLight
 
     private val colors = ArrayList<Vector3f>()
@@ -137,7 +136,7 @@ class Scene(private val window: GameWindow) {
 
 
 
-        pointLight = PointLight(Vector3f(0.0f, 10.0f, -10.0f), Vector3f(0.0f, 0.0f, 2.0f), Vector3f(1.0f, 0.5f, 0.1f))
+        pointLight = PointLight(Vector3f(15f, 5f, 30f), Vector3f(0.0f, 0.0f, 5.0f), Vector3f(1.0f, 0.5f, 0.1f))
         pointLight.parent = raumschiff
 
         thirdPersonCamera.translateLocal(Vector3f(0f, 0.0f, 10f))
@@ -147,18 +146,16 @@ class Scene(private val window: GameWindow) {
         firstPersonCamera.translateLocal(Vector3f(0f, 0.0f, -5f))
         firstPersonCamera.parent = raumschiff
 
-        spotLight = SpotLight(Vector3f(0f, 0f, 520f), Vector3f(4.0f, 4.0f, 0.0f), Vector3f(0.5f, 0.05f, 0.01f), 20.5f, 25.5f)
-        spotLight.parent = raumschiff
-        spotLightFront = SpotLight(Vector3f(0f, 0f, 490f), Vector3f(20.0f, 20.0f, 0.0f), Vector3f(0.5f, 0.05f, 0.01f), 40.5f, 45.5f)
+        spotLightFront = SpotLight(Vector3f(0f, 0f, 490f), Vector3f(10.0f, 10.0f, 0.0f), Vector3f(0.5f, 0.05f, 0.01f), 40.5f, 45.5f)
         spotLightFront.parent = raumschiff
 
-        colors.add(Vector3f(1f, 0f, 1f))
-        colors.add(Vector3f(0f, 1f, 1f))
-        colors.add(Vector3f(1f, 1f, 0f))
-        colors.add(Vector3f(1f, 0f, 1f))
-        colors.add(Vector3f(0f, 0f, 1f))
-        colors.add(Vector3f(1f, 0f, 0f))
-        colors.add(Vector3f(0f, 1f, 0f))
+        colors.add(Vector3f(5f, 0f, 5f))
+        colors.add(Vector3f(0f, 5f, 5f))
+        colors.add(Vector3f(5f, 5f, 0f))
+        colors.add(Vector3f(5f, 0f, 5f))
+        colors.add(Vector3f(0f, 0f, 5f))
+        colors.add(Vector3f(5f, 0f, 0f))
+        colors.add(Vector3f(0f, 5f, 0f))
 
         ringhittexture = Texture2D.invoke("assets/models/ring/ring_hit_emit.png", true)
         ringhittexture.setTexParams(GL12.GL_CLAMP_TO_EDGE, GL12.GL_CLAMP_TO_EDGE, GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR_MIPMAP_LINEAR)
@@ -173,7 +170,6 @@ class Scene(private val window: GameWindow) {
         staticShader.use()
 
         pointLight.bind(staticShader, "PointLight")
-        spotLight.bind(staticShader, "SpotLight", activeCamera.getCalculateViewMatrix())
         spotLightFront.bind(staticShader, "SpotLightFront", activeCamera.getCalculateViewMatrix())
 
         if(rings.size < 10)
@@ -197,7 +193,7 @@ class Scene(private val window: GameWindow) {
             if(cameraPerspective == 0)
             {
                 cameraPerspective = 1
-                thirdPersonCamera.translateLocal(Vector3f(0f, 0f, 2f))
+                thirdPersonCamera.translateLocal(Vector3f(0f, 6f, 2f))
             }
             staticShader.setUniform("colorization", 1f, 1f, 1f)
             staticShader.use()
@@ -229,7 +225,7 @@ class Scene(private val window: GameWindow) {
             if(cameraPerspective == 1)
             {
                 cameraPerspective = 0
-                thirdPersonCamera.translateLocal(Vector3f(0f, 0f, -2f))
+                thirdPersonCamera.translateLocal(Vector3f(0f, -6f, -2f))
             }
              //für einen einfacheren Start
             replaysceen?.render(staticShader)
