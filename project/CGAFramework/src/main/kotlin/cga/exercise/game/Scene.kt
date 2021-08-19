@@ -25,6 +25,7 @@ class Scene(private val window: GameWindow) {
     private val skyboxShader: ShaderProgram
     private val tronShader : ShaderProgram
     private val toonShader : ShaderProgram
+    private val normalShader : ShaderProgram
 
     private var mode = 0
     private var speed = -20f
@@ -96,6 +97,8 @@ class Scene(private val window: GameWindow) {
         tronShader = ShaderProgram("assets/shaders/tron_vert.glsl", "assets/shaders/tron_frag.glsl")
         skyboxShader = ShaderProgram("assets/shaders/skybox_vert.glsl", "assets/shaders/skybox_frag.glsl")
         toonShader = ShaderProgram("assets/shaders/toon_vert.glsl", "assets/shaders/toon_frag.glsl")
+        normalShader = ShaderProgram("assets/shaders/normal_vert.glsl", "assets/shaders/normal_frag.glsl")
+
         staticShader = tronShader
 
         skyBoxTextures.add("assets/textures/skybox/right.png")
@@ -274,6 +277,11 @@ class Scene(private val window: GameWindow) {
             {
                 staticShader = tronShader
             }
+            if(window.getKeyState(GLFW.GLFW_KEY_6))
+            {
+                staticShader = normalShader
+            }
+
             when(points){
                 20 -> speed = -25f
                 40 -> speed = -30f
