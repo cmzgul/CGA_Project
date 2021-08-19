@@ -231,6 +231,7 @@ class Scene(private val window: GameWindow) {
                 thirdPersonCamera.translateLocal(Vector3f(0f, -6f, -2f))
             }
              //für einen einfacheren Start
+            staticShader= tronShader
             replaysceen?.render(staticShader)
             raumschiff?.modelMatrix = Matrix4f()
             raumschiff?.translateLocal(Vector3f(0f, 0f, 500f))
