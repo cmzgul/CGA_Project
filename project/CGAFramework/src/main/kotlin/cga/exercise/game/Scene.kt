@@ -14,6 +14,7 @@ import org.joml.*
 import org.lwjgl.glfw.GLFW
 import org.lwjgl.opengl.GL11.*
 import org.lwjgl.opengl.GL12
+import java.util.*
 import kotlin.collections.ArrayList
 
 
@@ -31,8 +32,8 @@ class Scene(private val window: GameWindow) {
     private var speed = -20f
 
 
-    private val thirdPersonCamera = TronCamera(90f, 16f / 9f, 0.1f, 1200f)
-    private var firstPersonCamera = TronCamera(90f, 16f / 9f, 0.1f, 1200f)
+    private val thirdPersonCamera = TronCamera(90f, 16f / 9f, 0.1f, 4000f)
+    private var firstPersonCamera = TronCamera(90f, 16f / 9f, 0.5f, 1200f)
     private var activeCamera = thirdPersonCamera
 
     private val raumschiff = ModelLoader.loadModel(
@@ -70,7 +71,35 @@ class Scene(private val window: GameWindow) {
         0f
     )
 
+    private val planet2 = ModelLoader.loadModel(
+        "assets/models/planet1/FictionalPlanet1.obj",
+        0f,
+        0f,
+        0f
+    )
+    private val planet3 = ModelLoader.loadModel(
+        "assets/models/planet1/FictionalPlanet1.obj",
+        0f,
+        0f,
+        0f
+    )
+
+    private val planet4 = ModelLoader.loadModel(
+        "assets/models/planet1/FictionalPlanet1.obj",
+        0f,
+        0f,
+        0f
+    )
+
+    private val planet5 = ModelLoader.loadModel(
+        "assets/models/planet1/FictionalPlanet1.obj",
+        0f,
+        0f,
+        0f
+    )
+
     private val rings = ArrayList<Renderable?>()
+    private val planets : ArrayList<Renderable?>
     private var ringZPos = 0f
     private var points = 0
     private var pointsResetable = 0
@@ -83,10 +112,14 @@ class Scene(private val window: GameWindow) {
 
     private val colors = ArrayList<Vector3f>()
     private var currentColor = 0
-
-    private var xposNow = window.mousePos.xpos
+    private var firstPlanetPosition = 0f
 
     private val ringhittexture : Texture2D
+    private val marsTexture : Texture2D
+    private val jupiterTexture : Texture2D
+    private val neptuneTexture : Texture2D
+    private val venusTexture : Texture2D
+    private val earthTexture : Texture2D
 
     private var skybox = Skybox()
     private var skyBoxTextures = ArrayList<String>()
@@ -126,17 +159,6 @@ class Scene(private val window: GameWindow) {
         homescreen?.scaleLocal(Vector3f(100f))
         replaysceen?.scaleLocal(Vector3f(100f))
 
-        planet0?.parent = planet1
-
-        planet1?.translateGlobal(Vector3f(1100f, 350f, -1200f))
-        planet1?.scaleLocal(Vector3f(20f))
-
-        planet0?.rotateLocal(0f, 0f, -0.2f) //Schiefer Planet
-        planet0?.translateGlobal(Vector3f(10f, -5f, 0f))
-        planet0?.scaleLocal(Vector3f(0.5f))
-
-
-
 
 
         pointLight = PointLight(Vector3f(15f, 5f, 30f), Vector3f(0.0f, 0.0f, 5.0f), Vector3f(1.0f, 0.5f, 0.1f))
@@ -160,8 +182,45 @@ class Scene(private val window: GameWindow) {
         colors.add(Vector3f(5f, 0f, 0f))
         colors.add(Vector3f(0f, 5f, 0f))
 
+        marsTexture = Texture2D.invoke("assets/textures/2k_jupiter.jpg", true)
+        marsTexture.setTexParams(GL12.GL_CLAMP_TO_EDGE, GL12.GL_CLAMP_TO_EDGE, GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR_MIPMAP_LINEAR)
+
+        jupiterTexture = Texture2D.invoke("assets/textures/2k_mars.jpg", true)
+        jupiterTexture.setTexParams(GL12.GL_CLAMP_TO_EDGE, GL12.GL_CLAMP_TO_EDGE, GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR_MIPMAP_LINEAR)
+
+        venusTexture = Texture2D.invoke("assets/textures/2k_neptune.jpg", true)
+        venusTexture.setTexParams(GL12.GL_CLAMP_TO_EDGE, GL12.GL_CLAMP_TO_EDGE, GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR_MIPMAP_LINEAR)
+
+        neptuneTexture = Texture2D.invoke("assets/textures/2k_venus_atmosphere.jpg", true)
+        neptuneTexture.setTexParams(GL12.GL_CLAMP_TO_EDGE, GL12.GL_CLAMP_TO_EDGE, GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR_MIPMAP_LINEAR)
+
+        earthTexture = Texture2D.invoke("assets/textures/2k_earth_daymap.jpg", true)
+        earthTexture.setTexParams(GL12.GL_CLAMP_TO_EDGE, GL12.GL_CLAMP_TO_EDGE, GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR_MIPMAP_LINEAR)
+
         ringhittexture = Texture2D.invoke("assets/models/ring/ring_hit_emit.png", true)
         ringhittexture.setTexParams(GL12.GL_CLAMP_TO_EDGE, GL12.GL_CLAMP_TO_EDGE, GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR_MIPMAP_LINEAR)
+
+        planet1!!.meshes[0].changeTexture(1, earthTexture)
+
+        planet2!!.meshes[0].changeTexture(1, marsTexture)
+
+        planet3!!.meshes[0].changeTexture(1, jupiterTexture)
+
+        planet4!!.meshes[0].changeTexture(1, venusTexture)
+
+        planet5!!.meshes[0].changeTexture(1, neptuneTexture)
+
+        planets = arrayListOf(planet0, planet1, planet2, planet3, planet4, planet5)
+        planets.forEach { it?.scaleLocal(Vector3f(10f))}
+        planet0?.scaleLocal(Vector3f(0.05f))
+
+        planet0?.parent = planet1
+
+        translatePlanets()
+
+        planet0?.rotateLocal(0f, 0f, -0.2f) //Schiefer Planet
+        planet0?.translateGlobal(Vector3f(20f, -10f, 0f))
+
 
     }
 
@@ -200,8 +259,9 @@ class Scene(private val window: GameWindow) {
             }
             staticShader.setUniform("colorization", 1f, 1f, 1f)
             staticShader.use()
-            planet0?.render(staticShader)
-            planet1?.render(staticShader)
+            planets.forEach {
+                it?.render(staticShader)
+            }
             raumschiff?.render(staticShader)
 
             rings.forEach {
@@ -214,6 +274,13 @@ class Scene(private val window: GameWindow) {
                     it.meshes[0].changeTexture(1, ringhittexture)
                     if(points % 10 == 0)
                     {
+                        planets.forEach {
+                            it?.modelMatrix = Matrix4f()
+                            it?.scaleLocal(Vector3f(10f))
+                        }
+                        planet0?.scaleLocal(Vector3f(0.05f))
+                        firstPlanetPosition += 400f
+                        translatePlanets()
                         currentColor++
                         if(currentColor == 7)
                             currentColor = 0
@@ -232,6 +299,12 @@ class Scene(private val window: GameWindow) {
             }
              //für einen einfacheren Start
             staticShader= tronShader
+            firstPlanetPosition = 0f
+            planets.forEach {
+                it?.modelMatrix = Matrix4f()
+                it?.scaleLocal(Vector3f(10f))
+            }
+            translatePlanets()
             replaysceen?.render(staticShader)
             raumschiff?.modelMatrix = Matrix4f()
             raumschiff?.translateLocal(Vector3f(0f, 0f, 500f))
@@ -249,7 +322,9 @@ class Scene(private val window: GameWindow) {
     fun update(dt: Float, t: Float) {
         if (mode == 1) {
 
-            planet1?.rotateLocal(0f, 0.002f, 0f) //Planet rotation
+            planets.forEach {
+                it?.rotateLocal(0f, 0.0002f, 0f)
+            }
             planet0?.rotateAroundPoint(0f, 0.00002f, 0f, planet1?.getPosition()!!) //Planet rotation
             raumschiff?.translateLocal(Vector3f(0f, 0f, speed))
             if (window.getKeyState(GLFW.GLFW_KEY_A)) {
@@ -320,6 +395,18 @@ class Scene(private val window: GameWindow) {
         )
         rings[rings.size - 1]?.scaleLocal(Vector3f(0.5f))
         ringZPos -= 400f
+    }
+
+    fun translatePlanets(){
+        planet1?.translateLocal(Vector3f(60f, 20f, 0f - firstPlanetPosition))
+
+        planet2?.translateLocal(Vector3f(120f, 15f, -150f - firstPlanetPosition))
+
+        planet3?.translateLocal(Vector3f(-50f, 80f, -300f - firstPlanetPosition))
+
+        planet4?.translateLocal(Vector3f(-40f, -25f, -450f - firstPlanetPosition))
+
+        planet5?.translateLocal(Vector3f(120f, -60f, -600f - firstPlanetPosition))
     }
 }
 
