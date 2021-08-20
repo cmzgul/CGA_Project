@@ -13,3 +13,7 @@ Listen Sie hier noch einmal alle Teammitglieder auf.
 - Wechsel zwischen erster und dritter Perspektive mittels Tastendruck (Enes Yilmaz)
 - Automatische Generierung von Ringen in der Map(Endlosrunner) (Methusshan Elankumaran)
 - Wechsel zwischen Shadern mittels Tastendruck (Fatmagül Cömez)
+
+# Ressourcen
+- Raumschiff-Modell: https://free3d.com/de/3d-model/intergalactic-spaceship-in-blender-28-eevee-394046.html
+- Teiles des Codes für die Skybox wurden von https://learnopengl.com/ übernommen.
