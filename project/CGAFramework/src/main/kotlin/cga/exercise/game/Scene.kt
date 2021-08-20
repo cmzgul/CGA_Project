@@ -32,8 +32,8 @@ class Scene(private val window: GameWindow) {
     private var speed = -20f
 
 
-    private val thirdPersonCamera = TronCamera(90f, 16f / 9f, 0.1f, 4000f)
-    private var firstPersonCamera = TronCamera(90f, 16f / 9f, 0.5f, 1200f)
+    private val thirdPersonCamera = TronCamera(Math.toRadians(120f), 16f / 9f, 0.1f, 1000f)
+    private var firstPersonCamera = TronCamera(Math.toRadians(60f), 16f / 9f, 0.5f, 1000f)
     private var activeCamera = thirdPersonCamera
 
     private val raumschiff = ModelLoader.loadModel(
@@ -150,7 +150,6 @@ class Scene(private val window: GameWindow) {
         glEnable(GL_DEPTH_TEST); GLError.checkThrow()
         glDepthFunc(GL_LEQUAL); GLError.checkThrow()
 
-
         raumschiff?.translateLocal(Vector3f(0f, 0f, 500f)) //für einen einfacheren Start
         raumschiff?.scaleLocal(Vector3f(0.08f))
 
@@ -167,8 +166,6 @@ class Scene(private val window: GameWindow) {
         thirdPersonCamera.translateLocal(Vector3f(0f, 0.0f, 10f))
         thirdPersonCamera.parent = raumschiff
 
-        firstPersonCamera.rotateLocal(Math.toRadians(0f), 0f, 0f)
-        firstPersonCamera.translateLocal(Vector3f(0f, 0.0f, -5f))
         firstPersonCamera.parent = raumschiff
 
         spotLightFront = SpotLight(Vector3f(0f, 0f, 490f), Vector3f(10.0f, 10.0f, 0.0f), Vector3f(0.5f, 0.05f, 0.01f), 40.5f, 45.5f)
@@ -219,7 +216,7 @@ class Scene(private val window: GameWindow) {
         translatePlanets()
 
         planet0?.rotateLocal(0f, 0f, -0.2f) //Schiefer Planet
-        planet0?.translateGlobal(Vector3f(20f, -10f, 0f))
+        planet0?.translateGlobal(Vector3f(20f, 0f, 0f))
 
 
     }
@@ -292,6 +289,7 @@ class Scene(private val window: GameWindow) {
                 }
             }
         } else if (mode == 2) {
+            activeCamera = thirdPersonCamera
             if(cameraPerspective == 1)
             {
                 cameraPerspective = 0
@@ -304,6 +302,9 @@ class Scene(private val window: GameWindow) {
                 it?.modelMatrix = Matrix4f()
                 it?.scaleLocal(Vector3f(10f))
             }
+            planet0?.scaleLocal(Vector3f(0.05f))
+            planet0?.translateGlobal(Vector3f(20f, 0f, 0f))
+            thirdPersonCamera.fieldOfView = Math.toRadians(120f)
             translatePlanets()
             replaysceen?.render(staticShader)
             raumschiff?.modelMatrix = Matrix4f()
@@ -323,7 +324,7 @@ class Scene(private val window: GameWindow) {
         if (mode == 1) {
 
             planets.forEach {
-                it?.rotateLocal(0f, 0.0002f, 0f)
+                it?.rotateLocal(0f, 0.002f, 0f)
             }
             planet0?.rotateAroundPoint(0f, 0.00002f, 0f, planet1?.getPosition()!!) //Planet rotation
             raumschiff?.translateLocal(Vector3f(0f, 0f, speed))
@@ -357,6 +358,18 @@ class Scene(private val window: GameWindow) {
             {
                 staticShader = normalShader
             }
+            if(window.getKeyState(GLFW.GLFW_KEY_Q))
+            {
+                activeCamera.scaleLocal(Vector3f(1.05f))
+            }
+            if(window.getKeyState(GLFW.GLFW_KEY_N)  && activeCamera == thirdPersonCamera)
+            {
+                activeCamera.zoomOut(1f)
+            }
+            if(window.getKeyState(GLFW.GLFW_KEY_M) && activeCamera == thirdPersonCamera)
+            {
+                activeCamera.zoomIn(1f)
+            }
 
             when(points){
                 20 -> speed = -25f
@@ -381,6 +394,7 @@ class Scene(private val window: GameWindow) {
     fun onMouseMove(xpos: Double, ypos: Double) {
     }
 
+
     fun cleanup() {}
 
     fun spawnRings() {
@@ -400,13 +414,13 @@ class Scene(private val window: GameWindow) {
     fun translatePlanets(){
         planet1?.translateLocal(Vector3f(60f, 20f, 0f - firstPlanetPosition))
 
-        planet2?.translateLocal(Vector3f(120f, 15f, -150f - firstPlanetPosition))
+        planet2?.translateLocal(Vector3f(120f, -55f, 100f - firstPlanetPosition))
 
-        planet3?.translateLocal(Vector3f(-50f, 80f, -300f - firstPlanetPosition))
+        planet3?.translateLocal(Vector3f(-50f, 80f, -200f - firstPlanetPosition))
 
-        planet4?.translateLocal(Vector3f(-40f, -25f, -450f - firstPlanetPosition))
+        planet4?.translateLocal(Vector3f(-40f, -25f, -300f - firstPlanetPosition))
 
-        planet5?.translateLocal(Vector3f(120f, -60f, -600f - firstPlanetPosition))
+        planet5?.translateLocal(Vector3f(120f, 60f, -300f - firstPlanetPosition))
     }
 }
 

@@ -18,4 +18,20 @@ class TronCamera(var fieldOfView : Float = Math.toRadians(90f), var aspectRatio 
         shader.setUniform("view", getCalculateViewMatrix(), false)
         shader.setUniform("perspective", getCalculateProjectionMatrix(), false)
     }
+
+    fun zoomIn(scale : Float){
+        if(fieldOfView > Math.toRadians(90f))
+        {
+            fieldOfView -= Math.toRadians(scale)
+            println(fieldOfView)
+        }
+    }
+
+    fun zoomOut(scale : Float){
+        if(fieldOfView < Math.toRadians(130f))
+        {
+            fieldOfView += Math.toRadians(scale)
+            println(fieldOfView)
+        }
+    }
 }
