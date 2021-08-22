@@ -23,7 +23,6 @@ class TronCamera(var fieldOfView : Float = Math.toRadians(90f), var aspectRatio 
         if(fieldOfView > Math.toRadians(90f))
         {
             fieldOfView -= Math.toRadians(scale)
-            println(fieldOfView)
         }
     }
 
@@ -31,7 +30,6 @@ class TronCamera(var fieldOfView : Float = Math.toRadians(90f), var aspectRatio 
         if(fieldOfView < Math.toRadians(130f))
         {
             fieldOfView += Math.toRadians(scale)
-            println(fieldOfView)
         }
     }
 }
