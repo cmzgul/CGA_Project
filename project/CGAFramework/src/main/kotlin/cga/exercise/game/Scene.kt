@@ -414,7 +414,7 @@ class Scene(private val window: GameWindow) {
     fun translatePlanets(){
         planet1?.translateLocal(Vector3f(60f, 20f, 0f - firstPlanetPosition))
 
-        planet2?.translateLocal(Vector3f(120f, -55f, 100f - firstPlanetPosition))
+        planet2?.translateLocal(Vector3f(-120f, -25f, -100f - firstPlanetPosition))
 
         planet3?.translateLocal(Vector3f(-50f, 80f, -200f - firstPlanetPosition))
 
