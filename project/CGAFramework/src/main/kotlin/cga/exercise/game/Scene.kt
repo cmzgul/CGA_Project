@@ -226,7 +226,6 @@ class Scene(private val window: GameWindow) {
         glClear(GL_COLOR_BUFFER_BIT or GL_DEPTH_BUFFER_BIT)
         staticShader.use()
         activeCamera.bind(staticShader)
-        staticShader.use()
 
         pointLight.bind(staticShader, "PointLight")
         spotLightFront.bind(staticShader, "SpotLightFront", activeCamera.getCalculateViewMatrix())
@@ -244,18 +243,11 @@ class Scene(private val window: GameWindow) {
         if (mode == 0) {
             homescreen?.render(staticShader)
         } else if (mode == 1) {
-            skybox.render(
-                skyboxShader,
-                activeCamera.getCalculateViewMatrix(),
-                activeCamera.getCalculateProjectionMatrix()
-            )
             if(cameraPerspective == 0)
             {
                 cameraPerspective = 1
                 thirdPersonCamera.translateLocal(Vector3f(0f, 6f, 2f))
             }
-            staticShader.setUniform("colorization", 1f, 1f, 1f)
-            staticShader.use()
             planets.forEach {
                 it?.render(staticShader)
             }
@@ -287,6 +279,12 @@ class Scene(private val window: GameWindow) {
                 else if (CollisionDetection.randtreffer(it, raumschiff)){
                     mode = 2
                 }
+                skybox.render(
+                    skyboxShader,
+                    activeCamera.getCalculateViewMatrix(),
+                    activeCamera.getCalculateProjectionMatrix()
+                )
+                staticShader.use()
             }
         } else if (mode == 2) {
             activeCamera = thirdPersonCamera
@@ -296,7 +294,7 @@ class Scene(private val window: GameWindow) {
                 thirdPersonCamera.translateLocal(Vector3f(0f, -6f, -2f))
             }
              //für einen einfacheren Start
-            staticShader= tronShader
+            staticShader = tronShader
             firstPlanetPosition = 0f
             planets.forEach {
                 it?.modelMatrix = Matrix4f()
@@ -358,10 +356,6 @@ class Scene(private val window: GameWindow) {
             {
                 staticShader = normalShader
             }
-            if(window.getKeyState(GLFW.GLFW_KEY_Q))
-            {
-                activeCamera.scaleLocal(Vector3f(1.05f))
-            }
             if(window.getKeyState(GLFW.GLFW_KEY_N)  && activeCamera == thirdPersonCamera)
             {
                 activeCamera.zoomOut(1f)
@@ -370,7 +364,6 @@ class Scene(private val window: GameWindow) {
             {
                 activeCamera.zoomIn(1f)
             }
-
             when(points){
                 20 -> speed = -25f
                 40 -> speed = -30f
@@ -414,7 +407,7 @@ class Scene(private val window: GameWindow) {
     fun translatePlanets(){
         planet1?.translateLocal(Vector3f(60f, 20f, 0f - firstPlanetPosition))
 
-        planet2?.translateLocal(Vector3f(120f, -55f, 100f - firstPlanetPosition))
+        planet2?.translateLocal(Vector3f(-120f, -25f, -100f - firstPlanetPosition))
 
         planet3?.translateLocal(Vector3f(-50f, 80f, -200f - firstPlanetPosition))
 
